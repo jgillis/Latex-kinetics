@@ -149,6 +149,7 @@
 \expandafter\ifstrequal\expandafter {\mytemp}{}{#2}{#3}
 }
 
+
 \newcommand{\commandkeysequal}[4]{
 \edefprotect\mytempa{\commandkey{#1}}
 \edefprotect\mytempb{\commandkey{#2}}
@@ -231,6 +232,16 @@
   }
 }
 
+% arg: csv list
+\newcommand{\storekeys}[1]{
+  \renewcommand*{\do}[1]{
+      \expandafter\edef\csname storedkey##1\endcsname{\commandkey{##1}}
+  }
+  \docsvlist{#1}
+}
+
+\newcommand{\storedkey}[1]{\csexpandonce{storedkey#1}}
+
 % How vector notation is represented:    
 %
 %                                      u
@@ -241,7 +252,8 @@
 %
 \newcommand{\SymbolMarkupu}[1]{\overset{\commandkey{u}}{#1}}
 \newcommand{\SymbolMarkupl}[1]{\underset{\commandkey{l}}{#1}}
-\newkeycommand\SymbolMarkup[ul,ll,lr,ur,u,l,uu][1]{
+\newkeycommand\SymbolMarkup[ul,ll,lr,ur,u,l][1]{
+ \storekeys{ul,ll,lr,ur,u,l}
  \ensuremath{
     \commandkeyblank{u}{\let\myopu\identityfun}{\let\myopu\SymbolMarkupu}
     \commandkeyblank{l}{\let\myopl\identityfun}{\let\myopl\SymbolMarkupl}
@@ -254,7 +266,7 @@
 }
 
 \newcommand{\inheritkey}[1]{#1=\commandkey{#1}}
-
+\newcommand{\inheritkeys}[1]{#1=\csname key#1\endcsname}
 
 \newcommand{\ifboolkeys}[3]{\ifnumequal{\commandkey{#1}}{1}{#2}{#3}}
 
@@ -299,18 +311,21 @@
 
 \let\modifierSkewOuter\SKEWTILDE
 
+
+
 \newkeycommand\SymbolMarkupVectorModifier[ul,ll,lr,ur,u,l,diff,expressedIn,bool skew=false][1]{
+ \storekeys{ul,ll,lr,ur,u,l}
  \ensuremath{
     \modifierDiffOuter{
       \modifierSkewOuter{
-	\keyedfun{SymbolMarkup}{\modifierDiffInner{#1}}{
-	    \inheritkey{ul},
-	    \inheritkey{ll},
-	    \inheritkey{lr},
-	    \inheritkey{ur},
-	    \inheritkey{l},
-	    \inheritkey{u}
-	}
+	\SymbolMarkup[
+	    ul=\storedkey{ul},
+	    ll=\storedkey{ll},
+	    lr=\storedkey{lr},
+	    ur=\storedkey{ur},
+	    u=\storedkey{u},
+	    l=\storedkey{l}
+	]{\modifierDiffInner{#1}}
       }
     }
   }
@@ -368,8 +383,8 @@
 }
 
 \newcommand{\PRETTYDEFAULT}[2]{
+    \storekeys{object,wrt,expressedIn,diff}
     \keyedfun{SymbolMarkupVectorModifier}{\VecSymbol{#1}}{
-	u=55,
 	ul=\checkkey{object},
 	ll=\checkkey{wrt},
 	ur=\checkkey{expressedIn},
