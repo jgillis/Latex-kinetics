@@ -1,0 +1,37 @@
+\documentclass[10pt,a4paper]{article}
+\title{Kinetics package Demo}
+\author{Joris Gillis}
+
+
+\usepackage{kinetics}
+
+
+\begin{document}
+\maketitle
+
+\begin{equation}
+\AngularImpulse[expressedIn=3] + \AngularImpulse +  \AngularImpulse[diff=3] + \AngularImpulse[diff=3,expressedIn=3] + \AngularImpulse[diff=4,expressedIn=3]
+\end{equation}
+
+
+\section{Primitives a.k.a under the hood}
+
+
+$\vecexprstyle{a}$,$\vecsymbolstyle{c}$,$\tensexprstyle{b}$,$\tenssymbolstyle{d}$
+
+\SymbolMarkup{a}
+\SymbolMarkup[ul=4]{a}
+\SymbolMarkup[lr=4]{a}
+\SymbolMarkup[ul=ul,ll=ll,lr=lr,ur=ur,u=u,l=l]{a}
+
+\begin{equation}
+\SymbolMarkupVectorModifier[skew=true,lr=3]{b} \SymbolMarkupVectorModifier[lr=4]{b} \SymbolMarkupVectorModifier[skew=false,lr=4]{b} \SymbolMarkupVectorModifier[diff=3,skew=false,lr=4]{b} \SymbolMarkupVectorModifier[diff=3,skew=false,ur=4]{b}
+\end{equation}
+
+
+foo
+$\combine{a,}$:
+$\combine{,b}$:
+$\combine{}$:
+
+\end{document}
