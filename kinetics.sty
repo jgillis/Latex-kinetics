@@ -242,6 +242,12 @@
 
 \newcommand{\storedkey}[1]{\csexpandonce{storedkey#1}}
 
+\newcommand{\commandkeyblankt}[3]{
+\edefprotect\mytemp{\storedkey{#1}}
+\expandafter\ifstrequal\expandafter {\mytemp}{}{#2}{#3}
+}
+
+
 % How vector notation is represented:    
 %
 %                                      u
@@ -253,7 +259,6 @@
 \newcommand{\SymbolMarkupu}[1]{\overset{\commandkey{u}}{#1}}
 \newcommand{\SymbolMarkupl}[1]{\underset{\commandkey{l}}{#1}}
 \newkeycommand\SymbolMarkup[ul,ll,lr,ur,u,l][1]{
- \storekeys{ul,ll,lr,ur,u,l}
  \ensuremath{
     \commandkeyblank{u}{\let\myopu\identityfun}{\let\myopu\SymbolMarkupu}
     \commandkeyblank{l}{\let\myopl\identityfun}{\let\myopl\SymbolMarkupl}
@@ -296,7 +301,7 @@
 % An overhead dot will be used when the vector/tensor is expressed
 \newcommand{\DOTEXPR}[1]{
   \commandkeyblank{expressedIn}{#1}{
-    \ifblanc{\commandkey{diff}}
+    \commandkeyblank{diff}
       {#1}
       {\dot{#1}}
   }
@@ -380,17 +385,19 @@
 
 \newcommand{\combine}[1]{
 \join{,}{#1}
+%#1
 }
 
 \newcommand{\PRETTYDEFAULT}[2]{
     \storekeys{object,wrt,expressedIn,diff}
-    \keyedfun{SymbolMarkupVectorModifier}{\VecSymbol{#1}}{
-	ul=\checkkey{object},
-	ll=\checkkey{wrt},
-	ur=\checkkey{expressedIn},
-        diff=\commandkey{diff},
-        expressedIn=\commandkey{expressedIn}
-    }
+    %\edef\foo{\combine{5,6}}
+    \SymbolMarkupVectorModifier[
+	ul=\noexpand\combine{\storedkey{diff},a,,,\storedkey{diff}},
+	ll=\storedkey{wrt},
+	ur=\storedkey{expressedIn},
+        diff=\storedkey{diff},
+        expressedIn=\storedkey{expressedIn}
+    ]{\VecSymbol{#1}}
 }
 
 \let\formatter\PRETTYDEFAULT
