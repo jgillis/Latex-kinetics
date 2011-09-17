@@ -208,6 +208,9 @@
   \checkomit{#1}{\commandkey{#1}}
 }
 
+\newcommand{\checkkeys}[1]{
+  \checkomit{#1}{\storedkey{#1}}
+}
 
 \let\vectorstyle\prettydefault
 
@@ -233,9 +236,32 @@
 }
 
 % arg: csv list
+\newcommand{\storekeyss}[1]{
+  \renewcommand*{\do}[1]{
+    %\edef\mytemp{\commandkey{##1}}
+    \ifthenelse{\equal{\commandkey{##1}}{}}{
+      \expandafter\edefprotect\csname storedkey##1\endcsname{}
+     }{
+      \expandafter\edefprotect\csname storedkey##1\endcsname{\commandkey{##1}}
+     }
+  }
+  \docsvlist{#1}
+}
+
+\makeatletter
+\def\keyfam#1{\detokenize{keycmd->}\expandafter\@gobble\string#1}
+\makeatother
+
+% arg: csv list
 \newcommand{\storekeys}[1]{
   \renewcommand*{\do}[1]{
-      \expandafter\edef\csname storedkey##1\endcsname{\commandkey{##1}}
+    \edef\mytempa{\commandkey{##1}}
+    \edef\mytempb{\keyfam{##1}}
+    \if \mytempa \relax
+      \expandafter\edefprotect\csname storedkey##1\endcsname{}
+    \else
+      \expandafter\edefprotect\csname storedkey##1\endcsname{\commandkey{##1}}
+    \fi
   }
   \docsvlist{#1}
 }
@@ -319,7 +345,7 @@
 
 
 \newkeycommand\SymbolMarkupVectorModifier[ul,ll,lr,ur,u,l,diff,expressedIn,bool skew=false][1]{
- \storekeys{ul,ll,lr,ur,u,l}
+ \storekeyss{ul,ll,lr,ur,u,l}
  \ensuremath{
     \modifierDiffOuter{
       \modifierSkewOuter{
@@ -342,6 +368,14 @@
   \renewcommand*{\do}[1]{\listadd{#1}{##1}}
   \docsvlist{#2}
 }
+
+% usage: \fromcsv{\mylist}{foo,bar,baz}
+\newcommand{\fromcsve}[2]{
+  \edef\temp{#2}
+  \renewcommand*{\do}[1]{\listadd{#1}{##1}}
+  \expandafter\docsvlist{\temp}
+}
+
 
 % Counts the number of elements in a list
 % usage: \listcnt{\mycounter}{\mylist}
@@ -385,22 +419,23 @@
 
 \newcommand{\combine}[1]{
 \join{,}{#1}
-%#1
 }
 
-\newcommand{\PRETTYDEFAULT}[2]{
-    \storekeys{object,wrt,expressedIn,diff}
-    %\edef\foo{\combine{5,6}}
+% \storedkey{object},\storedkey{actingOn},\storedkey{end}
+
+\newcommand{\VECTORPRETTYDEFAULT}[2]{
+    \storekeys{object,wrt,expressedIn,diff,actingOn,end,start,wrt,actingFrom,id,index}
     \SymbolMarkupVectorModifier[
-	ul=\noexpand\combine{\storedkey{diff},a,,,\storedkey{diff}},
-	ll=\storedkey{wrt},
+	ul=\noexpand\combine{\storedkey{object},\storedkey{actingOn},\storedkey{end}},
+	ll=\noexpand\combine{\checkkeys{start},\checkkeys{wrt},\checkkeys{actingFrom}},
 	ur=\storedkey{expressedIn},
+        lr=\noexpand\combine{\checkkeys{id},\checkkeys{index}},
         diff=\storedkey{diff},
         expressedIn=\storedkey{expressedIn}
     ]{\VecSymbol{#1}}
 }
 
-\let\formatter\PRETTYDEFAULT
+\let\vectorformatter\VECTORPRETTYDEFAULT
 
 
 %\newcommand{\ifboolkey}[3]{\ifthenelse{\equal{\commandkey{#1}}{1}}{#2}{#3}}
@@ -420,14 +455,23 @@
 
 
 \newcommand{\InertiaTensorSymbol}{\textrm{I}}
+\newcommand{\InertiaTensorName}{I}
 \newcommand{\AngularVelocitySymbol}{\Omega}
+\newcommand{\AngularVelocityName}{w}
 \newcommand{\AngularAccelerationSymbol}{\alpha}
+\newcommand{\AngularAccelerationName}{alpha}
 \newcommand{\TorqueSymbol}{\mathcal{T}}
+\newcommand{\TorqueName}{T}
 \newcommand{\ForceSymbol}{F}
+\newcommand{\ForceName}{F}
 \newcommand{\ImpulseSymbol}{p}
+\newcommand{\ImpulseName}{p}
 \newcommand{\AngularImpulseSymbol}{\mathcal{H}}
+\newcommand{\AngularImpulseName}{H}
 \newcommand{\DisplacementSymbol}{\textrm{r}}
+\newcommand{\DisplacementName}{r}
 \newcommand{\unitVectorSymbol}{e}
+\newcommand{\unitVectorName}{e}
 \newcommand{\rvecd}[1]{
   \ifkey{expressedIn}{
     \ifthenelse{\not \equal{}{\commandkey{diff}}}
@@ -543,51 +587,39 @@
 }
 
 \newkeycommand\AngularImpulse[around,object,wrt,expressedIn,diff,components,id]{%
-  %\style{\prettydefault}{ \VectorMarkup{\AngularImpulseSymbol} }
-  \formatter{\AngularImpulseSymbol}{H}
-   % \keyedfun{SymbolMarkupVectorModifier}{\VecSymbol{\AngularImpulseSymbol}}{u=\mathrm{foo},ul=b,ll=c,ur=d,diff=e} }
-  %\style{\prettydefault}{ \SymbolMarkupVectorModifier[ul,ll,lr,ur,u,l,diff,expressedIn,bool skew=false]{\AngularImpulseSymbol}}
-  \style{\flatdefault}{\SymbolFlatRepresentation{H}{\commandkey{object}\commandkey{wrt}\commandkey{expressedIn}\commandkey{around}}}
+  \vectorformatter{\AngularImpulseSymbol}{\AngularImpulseName}
 }
 
 \newkeycommand\Torque[around,actingOn,actingFrom,expressedIn,diff,components,id]{%
-  \style{\prettydefault}{ \VectorMarkup{\TorqueSymbol} }
-  \style{\flatdefault}{\SymbolFlatRepresentation{T}{\commandkey{actingOn}\commandkey{actingFrom}\commandkey{expressedIn}\commandkey{around}}}
+  \vectorformatter{\TorqueSymbol}{\TorqueName}
 }
 
 \newkeycommand\Force[actingOn,actingFrom,expressedIn,diff,components,id]{%
- \style{\prettydefault}{\VectorMarkup{\ForceSymbol}}
- \style{\flatdefault}{\SymbolFlatRepresentation{F}{\commandkey{actingOn}\commandkey{actingFrom}\commandkey{expressedIn}}}
+ \vectorformatter{\ForceSymbol}{\ForceName}
 }
 
 \newkeycommand\Displacement[start,end,expressedIn,index,diff,components,id]{%
- \style{\prettydefault}{\VectorMarkup{\DisplacementSymbol}}
- \style{\flatdefault}{\SymbolFlatRepresentation{r}{\commandkey{end}\commandkey{start}\commandkey{expressedIn}}}
+ \vectorformatter{\DisplacementSymbol}{\DisplacementName}
 }
 
 \newkeycommand\AngularVelocity[object,wrt,expressedIn,index,diff,components,id,bool skew=false]{%
- \style{\prettydefault}{\VectorMarkup{\AngularVelocitySymbol}}
- \style{\flatdefault}{\SymbolFlatRepresentation{w}{\commandkey{object}\commandkey{wrt}\commandkey{expressedIn}}}
+ \vectorformatter{\AngularVelocitySymbol}{\AngularVelocityName}
 }
 
 \newkeycommand\AngularAcceleration[object,wrt,expressedIn,index,diff,components,id]{%
- \style{\prettydefault}{\VectorMarkup{\AngularAccelerationSymbol}}
- \style{\flatdefault}{\SymbolFlatRepresentation{alpha}{\commandkey{object}\commandkey{wrt}\commandkey{expressedIn}}}
+ \vectorformatter{\AngularAccelerationSymbol}{\AngularAccelerationName}
 }
 
 \newkeycommand\Velocity[object,wrt,expressedIn,index,diff,components,id]{%
- \style{\prettydefault}{\VectorMarkup{v}}
- \style{\flatdefault}{\SymbolFlatRepresentation{v}{\commandkey{object}\commandkey{wrt}\commandkey{expressedIn}}}
+ \vectorformatter{\VelocitySymbol}{\VelocityName}
 }
 
 \newkeycommand\Impulse[object,wrt,expressedIn,index,diff,components,id]{%
- \style{\prettydefault}{\VectorMarkup{\ImpulseSymbol}}
- \style{\flatdefault}{\SymbolFlatRepresentation{p}{\commandkey{object}\commandkey{wrt}\commandkey{expressedIn}}}
+ \vectorformatter{\ImpulseSymbol}{\ImpulseName}
 }
 
 \newkeycommand\Acceleration[object,wrt,expressedIn,index,diff,components,id]{%
- \style{\prettydefault}{\VectorMarkup{a}}
- \style{\flatdefault}{\SymbolFlatRepresentation{a}{\commandkey{object}\commandkey{wrt}\commandkey{expressedIn}}}
+ \vectorformatter{\AccelerationSymbol}{\AccelerationName}
 }
 
 
