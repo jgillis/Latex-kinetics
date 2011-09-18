@@ -5,6 +5,7 @@
 \usepackage{amssymb}
 \usepackage{ifthen}  % try to remove dependency 
 \usepackage{etoolbox}
+\usepackage{xstring}
 \usepackage{keycommand}[2010/04/27] % requires a recent version. v3.1415 (2010/04/27)
 
 %% === Derivatives and stuff ===
@@ -236,32 +237,14 @@
 }
 
 % arg: csv list
-\newcommand{\storekeyss}[1]{
-  \renewcommand*{\do}[1]{
-    %\edef\mytemp{\commandkey{##1}}
-    \ifthenelse{\equal{\commandkey{##1}}{}}{
-      \expandafter\edefprotect\csname storedkey##1\endcsname{}
-     }{
-      \expandafter\edefprotect\csname storedkey##1\endcsname{\commandkey{##1}}
-     }
-  }
-  \docsvlist{#1}
-}
-
-\makeatletter
-\def\keyfam#1{\detokenize{keycmd->}\expandafter\@gobble\string#1}
-\makeatother
-
-% arg: csv list
 \newcommand{\storekeys}[1]{
   \renewcommand*{\do}[1]{
     \edef\mytempa{\commandkey{##1}}
-    \edef\mytempb{\keyfam{##1}}
-    \if \mytempa \relax
+    \IfSubStr*{\expandafter\string\mytempa}{keycmd}{
       \expandafter\edefprotect\csname storedkey##1\endcsname{}
-    \else
+    }{
       \expandafter\edefprotect\csname storedkey##1\endcsname{\commandkey{##1}}
-    \fi
+    }
   }
   \docsvlist{#1}
 }
@@ -345,7 +328,7 @@
 
 
 \newkeycommand\SymbolMarkupVectorModifier[ul,ll,lr,ur,u,l,diff,expressedIn,bool skew=false][1]{
- \storekeyss{ul,ll,lr,ur,u,l}
+ \storekeys{ul,ll,lr,ur,u,l}
  \ensuremath{
     \modifierDiffOuter{
       \modifierSkewOuter{
@@ -426,7 +409,7 @@
 \newcommand{\VECTORPRETTYDEFAULT}[2]{
     \storekeys{object,wrt,expressedIn,diff,actingOn,end,start,wrt,actingFrom,id,index}
     \SymbolMarkupVectorModifier[
-	ul=\noexpand\combine{\storedkey{object},\storedkey{actingOn},\storedkey{end}},
+	ul=\noexpand\combine{\storedkey{object},\storedkey{id},\storedkey{actingOn},\storedkey{end}},
 	ll=\noexpand\combine{\checkkeys{start},\checkkeys{wrt},\checkkeys{actingFrom}},
 	ur=\storedkey{expressedIn},
         lr=\noexpand\combine{\checkkeys{id},\checkkeys{index}},
