@@ -12,6 +12,10 @@
 
 \newcommand{\InertiaTensorSymbol}{\textrm{I}}
 \newcommand{\InertiaTensorName}{I}
+\newcommand{\VelocitySymbol}{v}
+\newcommand{\VelocityName}{v}
+\newcommand{\AccelerationSymbol}{a}
+\newcommand{\AccelerationName}{a}
 \newcommand{\AngularVelocitySymbol}{\Omega}
 \newcommand{\AngularVelocityName}{w}
 \newcommand{\AngularAccelerationSymbol}{\alpha}
@@ -116,9 +120,6 @@
 
 \newcommand{\ifkey}[3]{\ifthenelse{\equal{\commandkey{#1}}{}}{#3}{#2}}
 \newcommand{\haskey}[1]{\not \equal{\commandkey{#1}}{}}
-
-%omitwrtworld
-%omitaroundeqobject
 
 \newcommand{\ARROW}[1]{\vec{#1}}
 \newcommand{\DARROW}[1]{\overset{\leftrightarrow}{#1}}
@@ -427,7 +428,7 @@
 }
 
 \newcommand{\TENSORPRETTYDEFAULT}[2]{%
-    \storekeys{around,object,wrt,expressedIn,diff,actingOn,end,start,wrt,actingFrom,id,index,frame}%
+    \storekeys{around,object,wrt,expressedIn,diff,actingOn,end,start,actingFrom,id,index,frame}%
     \SymbolMarkupVectorModifier[
         ul=\noexpand\combine{\checkkey{object},\checkkey{id},\checkkey{frame}},
         ur=\checkkey{expressedIn},

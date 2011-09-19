@@ -9,32 +9,52 @@
 
 \begin{document}
 
-
-
-
-
 \maketitle
 
-\let\foo8
-\foo
-{
-\let\foo7
-\foo
-}
-\foo
+\section{Introduction}
 
-around,object,wrt,expressedIn,diff,components,id
+The kinetics package was designed to faithfully capture and represent knowledge about vectors and tensors in a kinetics (kinematics \& dynamics) context.
 
-%  \omitting{all}{$#1[##1]$} &  \omitting{object}{$#1[##1]$} & 
-\newcommand{\demo}[2]{
-  \renewcommand*{\do}[1]{
-    {\footnotesize \string#1[##1]} & $#1[##1]$ & \omitting{wrt=0}{$#1[##1]$} \\
-  }
-  \begin{tabular}{r|l|l|l|l}
-  \docsvlist{#2}
-  \end{tabular}
-}
+How would you write the velocity of a passenger in a train with respect to the train's frame?
+Probably, you would do:
 
+\begin{SideBySideExample}[xrightmargin=1cm,frame=single]
+  $\vec{v}$
+\end{SideBySideExample}
+
+To make it less ambigous, you may write
+\begin{SideBySideExample}[xrightmargin=1cm,frame=single]
+  ${^{pass}_{train}}\vec{v}$
+\end{SideBySideExample}
+
+But all this really is, is a bunch of presentational/formatting commands put together. Where is the meaning in these statements?
+What is the index convention? Where goes the object, where goes the frame with respect to which the velocity was observed? What if you suddenly decide that boldface notation is better then overhead arrows?
+What if you want to copy paste your formulas in a report that is using a completely different notation convention? Suppose you laboriously put together some kinematics formulas and insights, omitting all the 'obvious' indices that give you only visual clutter.
+Another person -- or indeed yourself at another time -- may find these omissions not so 'obvious' and spread doubt. 
+
+
+The kinetics package solves all these issues:
+
+\begin{SideBySideExample}[xrightmargin=1cm,frame=single]
+  $\Velocity[object=pass,wrt=train]$
+\end{SideBySideExample}
+
+As a convenient side effect, the kinetics package forces you to think and structure your thoughts.
+
+\section{Kinetics quantities}
+
+The following are the basic quantities that arise in kinetics analysis.
+\begin{SideBySideExample}[xrightmargin=1cm,frame=single]
+  \Displacement[end=b,start=a]
+  \Velocity[object=a,wrt=0]
+  \Acceleration[object=a,wrt=0]
+  \AngularVelocity[object=a,wrt=0]
+  \AngularAcceleration[object=a,wrt=0]
+  \AngularImpulse[object=a,wrt=0,around=c]
+  \Impulse[object=a,wrt=0]
+  \InertiaTensor[object=a,around=c]
+  \Transformation[frame=a,wrt=b]
+\end{SideBySideExample}
 
 \section{unitvectors}
 
@@ -58,7 +78,7 @@ Unit vectors get a special treatment.
 \end{SideBySideExample}
 
 
-\section{formatters}
+\section{Styles}
 
 \begin{SideBySideExample}[xrightmargin=2cm,frame=single]
   {
@@ -71,19 +91,49 @@ Unit vectors get a special treatment.
   }
 \end{SideBySideExample}
 
-{
-\let\vectorformatter\VECTORFLAT
-\AngularImpulse[object=1,wrt=0,around=3,expressedIn=4,diff=4]
-}
-
 \subsection{Transformation matrices}
 
 \begin{SideBySideExample}
   \Transformation[frame=2,wrt=0,expressedIn=0]
 \end{SideBySideExample}
 
+\subsection{Content of incdices}
 
-\section{omits}
+Apart from plain text, the indices can also contain macro's.
+\begin{SideBySideExample}[xrightmargin=2cm,frame=single]
+  \def\foo{0}
+  \AngularImpulse[wrt=\foo]
+  \newcommand{\frm}[1]{{\{#1\}}}
+  \AngularImpulse[wrt=\frm{0}]
+  \AngularImpulse[wrt=a\frm{0}c]
+  $\AngularImpulse[wrt=\mathrm{foo}]$
+  $\AngularImpulse[wrt=a^b]$
+\end{SideBySideExample}
+
+The contents of the indices will be passed through a protected \verb+edef+ pass. This means that some macros (non-expandable ones) can't be used as indices. \verb+ifthenelse+ is a notable non-expandable function. You will have to work around it.
+
+\begin{SideBySideExample}[xrightmargin=2cm,frame=single]
+  \ifthenelse{\equal{a}{b}}{\def\mywrt{0}}{\def\mywrt{1}}
+  \AngularImpulse[wrt=\mywrt]
+\end{SideBySideExample}
+
+Currently there is no support for aliasing. You will have to do this manually. Possibly, we will add some kind of \verb+\setalias{pass}{0}+ later on.
+
+\begin{SideBySideExample}[xrightmargin=1cm,frame=single]
+  \def\pass{pass}
+  \def\train{train}
+  $\Velocity[object=\pass,wrt=\train]$
+  \def\pass{1}
+  \def\train{0}
+  $\Velocity[object=\pass,wrt=\train]$
+\end{SideBySideExample}
+
+\verb+\setalias{wrt}{pass}{0}+
+
+%\newcommand{\frm}[1]{{\{#1\}}}
+
+
+\section{Omit functionality}
 
 The kinetics package was designed to faithfully capture and represent knowledge about kinetics vectors and tensors. It was not designed to give the reader a headache with visual overload. This is were omits come in to play. They allow to selectively hide certain knowledge about the vectors visually, while it is fully retained in the source code. 
 
@@ -124,7 +174,7 @@ A keyword can also be used as an omit instruction:
 %  }
 %\end{SideBySideExample}
 
-Todo: 
+Todo: omit expressedIn=wrt or in logic?
 
 A \verb+keyword=value+ style can be used to selectively omit indices:
 \begin{SideBySideExample}[xrightmargin=1cm,frame=single]
@@ -185,6 +235,22 @@ The \verb+\omitenv+ environment gives you the same functionality of \verb+\omitt
     \AngularImpulse[object=1,wrt=0,around=2]
   \end{omitenv}
 \end{SideBySideExample}
+
+
+
+%\begin{SideBySideExample}[xrightmargin=1cm,frame=single]
+%  \AngularImpulse[wrt=\frm{0}]
+% %\end{SideBySideExample}
+
+%  \omitting{all}{$#1[##1]$} &  \omitting{object}{$#1[##1]$} & 
+\newcommand{\demo}[2]{
+  \renewcommand*{\do}[1]{
+    {\footnotesize \string#1[##1]} & $#1[##1]$ & \omitting{wrt=0}{$#1[##1]$} \\
+  }
+  \begin{tabular}{r|l|l|l|l}
+  \docsvlist{#2}
+  \end{tabular}
+}
 
 
 \demo{\AngularImpulse}{
