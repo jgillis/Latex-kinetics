@@ -370,12 +370,13 @@
 \let\modifierDiffOuter\DDTVEC
 
 \newcommand{\SKEWTILDE}[1]{%
-  \ifboolkey{skew}{\ensuremath{\overset{\sim}{#1}}}{#1}%
+  \edefprotect\myskew{\storedkey{skew}}%
+  \IfSubStr*{\myskew}{1}{\ensuremath{\overset{\sim}{#1}}}{#1}%
 }
 
 \let\modifierSkewOuter\SKEWTILDE
 
-\newkeycommand\SymbolMarkupVectorModifier[ul,ll,lr,ur,u,l,diff,expressedIn,bool skew=false][1]{%
+\newkeycommand\SymbolMarkupVectorModifier[ul,ll,lr,ur,u,l,diff,expressedIn,skew][1]{%
  \storekeys{ul,ll,lr,ur,u,l}%
  \ensuremath{%
     \modifierDiffOuter{%
@@ -399,7 +400,7 @@
 % \storedkey{object},\storedkey{actingOn},\storedkey{end}
 
 \newcommand{\VECTORPRETTYDEFAULT}[2]{%
-    \storekeys{around,object,wrt,expressedIn,diff,on,end,start,wrt,from,id,index,at}%
+    \storekeys{around,object,wrt,expressedIn,diff,on,end,start,wrt,from,id,index,at,skew}%
     \SymbolMarkupVectorModifier[
         ul=\noexpand\combine{\checkkey{object},\checkkey{id},\checkkey{on},\checkkey{end}},
         ll=\noexpand\combine{\checkkey{start},\checkkey{wrt},\checkkey{from}},
@@ -407,12 +408,13 @@
         lr=\noexpand\combine{\checkkey{id},\checkkey{index}},
         u=\noexpand\combine{\checkkey{around},\checkkey{at}},
         diff=\storedkey{diff},
-        expressedIn=\storedkey{expressedIn}
+        expressedIn=\storedkey{expressedIn},
+        skew=\storedkey{skew}
     ]{\VecSymbol{#1}}%
 }
 
 \newcommand{\VECTORFLAT}[2]{
-    \storekeys{around,object,expressedIn,diff,on,end,start,wrt,from,id,index,at}%
+    \storekeys{around,object,expressedIn,diff,on,end,start,wrt,from,id,index,at,skew}%
     {\tt%
     \ifthenelse{\equal{\commandkey{expressedIn}}{}}{\error{cannot represent this: I need expressedIn}}{}%
     \ifthenelse{\(\not \equal{\commandkey{diff}}{}\)}{%
