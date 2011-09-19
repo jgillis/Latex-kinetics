@@ -234,18 +234,18 @@
 \newcommand{\omitlogicbar}{0}
 \newcommand{\omitlogicbaz}{1}
 
-\newcommand{\checkomit}[2]{
- \ifcsundef{omitall}{
-  \ifcsundef{omit#1}{
-   \ifcsdef{omitlist#1}{
-     \ifinlistcs{#2}{omitlist#1}{}{
-      \ifcsundef{omitlogic#1}{#2}{\ifthenelse{\equal{\csname omitlogic#1\endcsname}{1}}{}{#2}}
-     }
-   }{
-    \ifcsundef{omitlogic#1}{#2}{\ifthenelse{\equal{\csname omitlogic#1\endcsname}{1}}{}{#2}}
-   }
-  }{}
- }{}
+\newcommand{\checkomit}[2]{%
+ \ifcsundef{omitall}{%
+  \ifcsundef{omit#1}{%
+   \ifcsdef{omitlist#1}{%
+     \ifinlistcs{#2}{omitlist#1}{}{%
+      \ifcsundef{omitlogic#1}{#2}{\ifthenelse{\equal{\csname omitlogic#1\endcsname}{1}}{}{#2}}%
+     }%
+   }{%
+    \ifcsundef{omitlogic#1}{#2}{\ifthenelse{\equal{\csname omitlogic#1\endcsname}{1}}{}{#2}}%
+   }%
+  }{}%
+ }{}%
 }
 
 
@@ -255,47 +255,53 @@
 
 \newcommand{\ifblanc}[3]{\ifstrequal{#1}{}{#2}{#3}}
 
-\newcommand{\TensSymbol}[1]{
-  \commandkeyblankt{expressedIn}{
-    \tenssymbolstyle{#1}
-  }{
-    \tensexprstyle{#1}
-  }
+\newcommand{\TensSymbol}[1]{%
+  \commandkeyblankt{expressedIn}{%
+    \tenssymbolstyle{#1}%
+  }{%
+    \tensexprstyle{#1}%
+  }%
 }
 
-\newcommand{\VecSymbol}[1]{
-  \commandkeyblankt{expressedIn}{
-    \vecsymbolstyle{#1}
-  }{
-    \vecexprstyle{#1}
-  }
+\newcommand{\VecSymbol}[1]{%
+  \commandkeyblankt{expressedIn}{%
+    \vecsymbolstyle{#1}%
+  }{%
+    \vecexprstyle{#1}%
+  }%
 }
 
+\makeatletter
 
+\def\abc{abc}
+\def\xyz{xyz}
 % storekeys
 % Accepts a csv list of commandkey names.
 % For each commandkey it stores the edef'ed content in a variable.
 % arg: csv list
-\newcommand{\storekeys}[1]{
-  \renewcommand*{\do}[1]{
-    \edef\mytempa{\commandkey{##1}}
-    \IfSubStr*{\expandafter\string\mytempa}{keycmd}{
-      \expandafter\edefprotect\csname storedkey##1\endcsname{}
-    }{
-      \expandafter\edefprotect\csname storedkey##1\endcsname{\commandkey{##1}}
-    }
-  }
-  \docsvlist{#1}
+\newcommand{\storekeys}[1]{%
+  \renewcommand*{\do}[1]{%
+    \edefprotect\mytempa{\commandkey{##1}}%
+    \expandarg
+    \IfSubStr*{\expandafter\string\mytempa}{keycmd}{%
+      \expandafter\edefprotect\csname storedkey##1\endcsname{}%
+    }{%
+      \expandafter\edefprotect\csname storedkey##1\endcsname{\commandkey{##1}}%
+    }%
+  }%
+  \docsvlist{#1}%
 }
+
+\makeatother
 
 \newcommand{\storedkey}[1]{\csexpandonce{storedkey#1}}
 
-\newcommand{\commandkeyblankt}[3]{
-\edefprotect\mytemp{\storedkey{#1}}
-\expandafter\ifstrequal\expandafter {\mytemp}{}{#2}{#3}
+\newcommand{\commandkeyblankt}[3]{%
+\edefprotect\mytemp{\storedkey{#1}}%
+\expandafter\ifstrequal\expandafter {\mytemp}{}{#2}{#3}%
 }
 
-
+\newcommand{\identity}[1]{#1}
 
 % How vector notation is represented:    
 %
@@ -309,8 +315,8 @@
 \newcommand{\SymbolMarkupl}[1]{\underset{\commandkey{l}}{#1}}
 \newkeycommand\SymbolMarkup[ul,ll,lr,ur,u,l][1]{%
  \ensuremath{%
-    \commandkeyblank{u}{\let\myopu\identityfun}{\let\myopu\SymbolMarkupu}%
-    \commandkeyblank{l}{\let\myopl\identityfun}{\let\myopl\SymbolMarkupl}%
+    \commandkeyblank{u}{\let\myopu\identity}{\let\myopu\SymbolMarkupu}%
+    \commandkeyblank{l}{\let\myopl\identity}{\let\myopl\SymbolMarkupl}%
     \myopl{%
       \myopu{%
 	  {_{\commandkey{ll}}^{\commandkey{ul}}}{#1}_{\commandkey{lr}}^{\commandkey{ur}}%
@@ -322,34 +328,34 @@
 \newcommand{\ifboolkey}[3]{\ifnumequal{\commandkey{#1}}{1}{#2}{#3}}
 
 % A d/dt notation is used when the vector/tensor is true
-\newcommand{\DDTVEC}[1]{
-  \commandkeyblankt{diff}{#1}{
-    \commandkeyblankt{expressedIn}{
-      \frac{\mathrm{d}#1}{{^\commandkey{diff}}\mathrm{d}t}
-    }{
-      \commandkeysequal{diff}{expressedIn}{
-	#1
-      }{
-	{_{\commandkey{expressedIn}}^{\commandkey{diff}}}\tensexprstyle{\TransformationSymbol} . #1
-      }
-    }
-  }
+\newcommand{\DDTVEC}[1]{%
+  \commandkeyblankt{diff}{#1}{%
+    \commandkeyblankt{expressedIn}{%
+      \frac{\mathrm{d}#1}{{^\commandkey{diff}}\mathrm{d}t}%
+    }{%
+      \commandkeysequal{diff}{expressedIn}{%
+	#1%
+      }{%
+	{_{\commandkey{expressedIn}}^{\commandkey{diff}}}\tensexprstyle{\TransformationSymbol} . #1%
+      }%
+    }%
+  }%
 }
 
 % An overhead dot will be used when the vector/tensor is expressed
-\newcommand{\DOTEXPR}[1]{
-  \commandkeyblankt{expressedIn}{#1}{
-    \commandkeyblankt{diff}
-      {#1}
-      {\dot{#1}}
-  }
+\newcommand{\DOTEXPR}[1]{%
+  \commandkeyblankt{expressedIn}{#1}{%
+    \commandkeyblankt{diff}%
+      {#1}%
+      {\dot{#1}}%
+  }%
 }
 
 \let\modifierDiffInner\DOTEXPR
 \let\modifierDiffOuter\DDTVEC
 
-\newcommand{\SKEWTILDE}[1]{
-  \ifboolkey{skew}{\ensuremath{\overset{\sim}{#1}}}{#1}
+\newcommand{\SKEWTILDE}[1]{%
+  \ifboolkey{skew}{\ensuremath{\overset{\sim}{#1}}}{#1}%
 }
 
 \let\modifierSkewOuter\SKEWTILDE
@@ -479,14 +485,13 @@
 
 
 
-\newcommand{\identity}[2]{#1}
-\newcommand{\identityfun}[1]{#1} % should be renamed identity
+
 
 \newcommand{\error}[1]{?#1?}
 
 
 \newcommand{\genericformatter}[2]{%
-  \def\vectorcontext{#2}
+  \def\vectorcontext{#2}%
   #1{\csname #2Symbol\endcsname}{\csname #2Name\endcsname}%
 }
 
