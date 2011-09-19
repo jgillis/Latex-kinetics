@@ -2,15 +2,226 @@
 \title{Kinetics package Demo}
 \author{Joris Gillis}
 
-
+\usepackage{fullpage}
 \usepackage{kinetics}
-
+\usepackage{fancyvrb}
+\usepackage{fvrb-ex}
 
 \begin{document}
+
+
+
+
+
 \maketitle
+
+\let\foo8
+\foo
+{
+\let\foo7
+\foo
+}
+\foo
+
+around,object,wrt,expressedIn,diff,components,id
+
+%  \omitting{all}{$#1[##1]$} &  \omitting{object}{$#1[##1]$} & 
+\newcommand{\demo}[2]{
+  \renewcommand*{\do}[1]{
+    {\footnotesize \string#1[##1]} & $#1[##1]$ & \omitting{wrt=0}{$#1[##1]$} \\
+  }
+  \begin{tabular}{r|l|l|l|l}
+  \docsvlist{#2}
+  \end{tabular}
+}
+
+
+\section{unitvectors}
+
+Unit vectors get a special treatment.
+
+\begin{SideBySideExample}[xrightmargin=1cm,frame=single]
+  \UnitVector[axis=x,frame=3]
+  \UnitVector[axis=y,frame=3]
+  \UnitVector[axis=z,frame=3]
+\end{SideBySideExample}
+
+\begin{SideBySideExample}[xrightmargin=1cm,frame=single]
+  \UnitVector[axis=1,frame=3]
+  \UnitVector[axis=2,frame=3]
+  \UnitVector[axis=3,frame=3]
+\end{SideBySideExample}
+
+\begin{SideBySideExample}[xrightmargin=1cm,frame=single]
+  \UnitVector[axis=x,frame=3,expressedIn=2]
+  \UnitVector[axis=y,frame=3,diff=2]
+\end{SideBySideExample}
+
+
+\section{formatters}
+
+\begin{SideBySideExample}[xrightmargin=2cm,frame=single]
+  {
+    \let\vectorformatter\VECTORPRETTYDEFAULT
+    \AngularImpulse[object=1,wrt=0,around=3,expressedIn=4]
+    \AngularImpulse[object=1,wrt=0,around=3,expressedIn=4,diff=4]
+    \let\vectorformatter\VECTORFLAT
+    \AngularImpulse[object=1,wrt=0,around=3,expressedIn=4]
+    \AngularImpulse[object=1,wrt=0,around=3,expressedIn=4,diff=4]
+  }
+\end{SideBySideExample}
+
+{
+\let\vectorformatter\VECTORFLAT
+\AngularImpulse[object=1,wrt=0,around=3,expressedIn=4,diff=4]
+}
+
+\subsection{Transformation matrices}
+
+\begin{SideBySideExample}
+  \Transformation[frame=2,wrt=0,expressedIn=0]
+\end{SideBySideExample}
+
+
+\section{omits}
+
+The kinetics package was designed to faithfully capture and represent knowledge about kinetics vectors and tensors. It was not designed to give the reader a headache with visual overload. This is were omits come in to play. They allow to selectively hide certain knowledge about the vectors visually, while it is fully retained in the source code. 
+
+%It may strike you as insane to first annotate these vectors laboriously only to hide these annotation later on. It is not. Think 'content versus presentation'.
+
+\subsection{setomit}
+The first command is the low-level \verb=\setomit= command, which takes one-argument, an omit instruction and applies it locally. i.e. within curly braces or within \verb=\begingroup= \ldots \verb=\endgroup= 
+
+The \verb=all= omit instruction captures all keywords:
+\begin{SideBySideExample}[xrightmargin=1cm,frame=single]
+  \AngularImpulse[object=1,wrt=0]
+  {
+    \setomit{all}
+    \AngularImpulse[object=1,wrt=0]
+    \AngularImpulse[object=1,wrt=0]
+  }
+  \AngularImpulse[object=1,wrt=0]
+\end{SideBySideExample}
+
+
+A keyword can also be used as an omit instruction:
+\begin{SideBySideExample}[xrightmargin=1cm,frame=single]
+  \AngularImpulse[object=1,wrt=0]
+  \begingroup
+    \setomit{object}
+    \AngularImpulse[object=1,wrt=0]
+    \AngularImpulse[object=1,wrt=0]
+  \endgroup
+  \AngularImpulse[object=1,wrt=0]
+\end{SideBySideExample}
+
+%A \verb+keyword=value+ style can be used to selectively omit indices:
+%\begin{SideBySideExample}[xrightmargin=1cm,frame=single]
+%  {
+%    \setomit{wrt=0}
+%    \AngularImpulse[object=1,wrt=0]
+%    \AngularImpulse[object=2,wrt=1]
+%  }
+%\end{SideBySideExample}
+
+Todo: 
+
+A \verb+keyword=value+ style can be used to selectively omit indices:
+\begin{SideBySideExample}[xrightmargin=1cm,frame=single]
+  {
+    \setomit{wrt=0}
+    \AngularImpulse[object=1,wrt=0]
+    \AngularImpulse[object=2,wrt=1]
+  }
+\end{SideBySideExample}
+
+Omit commands can accumulate hierarchically. Each \verb=\setomit= modifies the scope locally.
+\begin{SideBySideExample}[xrightmargin=1cm,frame=single]
+  \AngularImpulse[object=1,wrt=0,around=2]
+  {
+    \setomit{wrt=0}
+    \AngularImpulse[object=1,wrt=0,around=2]
+    {
+      \setomit{object}
+      \AngularImpulse[object=1,wrt=0,around=2]
+    }
+    \AngularImpulse[object=1,wrt=0,around=2]
+  }
+\end{SideBySideExample}
+
+
+\subsection{omitting}
+
+The \verb+\omitting+ command is a convenient wrapper around \verb+\setomit+ that takes a comma-separated list of omit instructions
+
+\begin{SideBySideExample}[xrightmargin=1cm,frame=single]
+  \AngularImpulse[object=1,wrt=0,around=2]
+  \omitting{wrt=1,wrt=0,around}{\AngularImpulse[object=1,wrt=0,around=2]}
+\end{SideBySideExample}
+
+Nesting of omitting commands is perfectly allowed:
+\begin{SideBySideExample}[xrightmargin=1cm,frame=single]
+  \AngularImpulse[object=1,wrt=0,around=2]
+  \omitting{wrt=1,wrt=0,around}{
+    \AngularImpulse[object=1,wrt=0,around=2]
+    \omitting{all}{
+      \AngularImpulse[object=1,wrt=0,around=2]
+    }
+    \AngularImpulse[object=1,wrt=0,around=2]
+  }
+\end{SideBySideExample}
+
+\subsection{omitenv}
+
+The \verb+\omitenv+ environment gives you the same functionality of \verb+\omitting+ , but in an environment context. Again, nesting is allowed:
+
+\begin{SideBySideExample}[xrightmargin=1cm,frame=single]
+  \AngularImpulse[object=1,wrt=0,around=2]
+  \begin{omitenv}{wrt=1,object}
+    \AngularImpulse[object=1,wrt=0,around=2]
+    \begin{omitenv}{wrt=0,around}
+      \AngularImpulse[object=1,wrt=0,around=2]
+    \end{omitenv}
+    \AngularImpulse[object=1,wrt=0,around=2]
+  \end{omitenv}
+\end{SideBySideExample}
+
+
+\demo{\AngularImpulse}{
+{},
+{object=a},
+{object=b,wrt=0},
+{wrt=1},
+{expressedIn=b},
+{object=a,expressedIn=b},
+{around=c},
+{around=c,object=a,expressedIn=b},
+{diff=d},
+{diff=d,around=c,object=a},
+{diff=d,around=c,object=a,expressedIn=b},
+{diff=d,around=c,object=a,expressedIn=d}
+}
+
+
+\demo{\InertiaTensor}{
+{},
+{object=a},
+{expressedIn=b},
+{object=a,expressedIn=b},
+{around=c},
+{around=c,object=a,expressedIn=b}
+}
 
 \begin{equation}
 \AngularImpulse[expressedIn=3] + \AngularImpulse +  \AngularImpulse[diff=3] + \AngularImpulse[diff=3,expressedIn=3] + \AngularImpulse[diff=4,expressedIn=3]
+\end{equation}
+
+\begin{equation}
+\AngularImpulse[expressedIn=3,object=4] + \AngularImpulse[object=4] +  \AngularImpulse[diff=3,object=4] + \AngularImpulse[diff=3,expressedIn=3,object=4] + \AngularImpulse[diff=4,expressedIn=3,object=4]
+\end{equation}
+
+\begin{equation}
+\AngularImpulse[expressedIn=3,object=4,id=8] + \AngularImpulse[object=4] +  \AngularImpulse[diff=3,object=4] + \AngularImpulse[diff=3,expressedIn=3,object=4] + \AngularImpulse[diff=4,expressedIn=3,object=4]
 \end{equation}
 
 
@@ -30,8 +241,38 @@ $\vecexprstyle{a}$,$\vecsymbolstyle{c}$,$\tensexprstyle{b}$,$\tenssymbolstyle{d}
 
 
 foo
-$\combine{a,}$:
+$\combine{a,a,a,,,}$:
 $\combine{,b}$:
 $\combine{}$:
 
+$\combine{foo,bar,ba,{},,,,asa}$:
+
+sdsada:
+
+% http://tex.stackexchange.com/questions/21466/test-if-token-is-a-control-sequence
+
+$\edef\mytempc{9} \expandafter\ifdefmacro{\mytempc}{a}{b}$
+$\edef\mytempc{\commandkey{flubber}} \expandafter\ifdefmacro{\mytempc}{a}{b}$|
+$\edef\mytempc{9} \expandafter\ifdefmacro\mytempc{a}{b}$
+$\edef\mytempc{\commandkey{flubber}} \expandafter\ifdefmacro\mytempc{a}{b}$|
+$\edef\mytempc{9} \ifdefmacro{\mytempc}{a}{b}$
+$\edef\mytempc{\commandkey{flubber}} \ifdefmacro{\mytempc}{a}{b}$|
+$\edef\mytempc{9} \ifdefmacro\mytempc{a}{b}$
+$\edef\mytempc{\commandkey{flubber}} \ifdefmacro\mytempc{a}{b}$
+||
+
+$
+\edef\mytempc{9}
+\if \mytempc \relax
+  a
+\else
+  b
+\fi
+\edef\mytempc{\commandkey{flubber}} 
+\if \mytempc \relax
+  a
+\else
+  b
+\fi
+$
 \end{document}

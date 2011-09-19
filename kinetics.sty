@@ -8,75 +8,112 @@
 \usepackage{xstring}
 \usepackage{keycommand}[2010/04/27] % requires a recent version. v3.1415 (2010/04/27)
 
-%% === Derivatives and stuff ===
-\newcommand{\diff}[2]{\frac{\mathrm{d} #1}{\mathrm{d}#2}}
-\newcommand{\ddiff}[2]{\frac{\mathrm{d}^2 #1}{\mathrm{d}{#2}^2}}
-\newcommand{\pdiff}[2]{\frac{\partial#1}{\partial#2}}
-\newcommand{\difft}[1]{\dot{#1}}
-\newcommand{\difftt}[1]{\ddot{#1}}
-\newcommand{\tdiff}[1]{\diff{(#1)}{t}}
-\newcommand{\ttdiff}[1]{\ddiff{(#1)}{t}}
+%% === Symbols and names ==
 
-\newcommand{\eval}[2]{{\left.#1\right)_{#2}}}
-%% === Matrices and vectors ===
+\newcommand{\InertiaTensorSymbol}{\textrm{I}}
+\newcommand{\InertiaTensorName}{I}
+\newcommand{\AngularVelocitySymbol}{\Omega}
+\newcommand{\AngularVelocityName}{w}
+\newcommand{\AngularAccelerationSymbol}{\alpha}
+\newcommand{\AngularAccelerationName}{alpha}
+\newcommand{\TorqueSymbol}{\mathcal{T}}
+\newcommand{\TorqueName}{T}
+\newcommand{\ForceSymbol}{F}
+\newcommand{\ForceName}{F}
+\newcommand{\ImpulseSymbol}{p}
+\newcommand{\ImpulseName}{p}
+\newcommand{\AngularImpulseSymbol}{\mathcal{H}}
+\newcommand{\AngularImpulseName}{H}
+\newcommand{\DisplacementSymbol}{\textrm{r}}
+\newcommand{\DisplacementName}{r}
+\newcommand{\UnitVectorSymbol}{e}
+\newcommand{\UnitVectorName}{e}
+\newcommand{\TransformationSymbol}{R}
+\newcommand{\TransformationName}{R}
+\newcommand{\GenericVectorSymbol}{v}
+\newcommand{\GenericVectorName}{v}
 
-% \sideset
-\newcommand{\sff}[5]{\ensuremath{{_{#3}^{#2}}{#1}_{#5}^{#4}}}
 
-\newcommand{\sffl}[3]{\ensuremath{{_{#3}^{#2}}{#1}}}
-% \sff{X}{A}{B}{C}{vectorindex}
-%
-%A   C
-%  X
-%B   vectorindex
-
-\newcommand{\atant}{\mathrm{atan}2}
-\newcommand{\atan}{\mathrm{atan}}
-\newcommand{\sign}[1]{\mathrm{sign}(#1)}
-
-\newcommand{\re}{\ensuremath{\mathbb{R}}}
-\newcommand{\rep}[1]{\re^{#1}}
-
-%\newcommand{\mtx}[1]{\ensuremath{\underset{\raisebox{2pt}{=}}{\mathbf{#1}}}}
-% raisebox screws up when inside asubfloat caption ???
-\newcommand{\mtx}[1]{\ensuremath{\underset{=}{\mathbf{#1}}}}
-
-\newcommand{\pinv}{\dagger}
-
-\newcommand{\eye}[1]{\mtx{\mathtt{1}^{#1}}}
-
-\newcommand{\zeros}[1]{\ensuremath{{^{#1}}\mathtt{\mtx{0}}}}
-
-\newcommand{\rvec}[1]{\ensuremath{\underline{#1}}}
-\newcommand{\hvec}[1]{\hvec{#1}}
-
-\newcommand{\rtens}[1]{\mtx{#1}}
-\newcommand{\tens}[1]{\ensuremath{\overset{\leftrightarrow}{#1}}}
-
-\newcommand{\eyet}[1]{\tens{\mathtt{I}^{#1}}}
-
-\newcommand{\skw}[1]{\ensuremath{\widetilde{\mtx{#1}}}}
-%\newcommand{\skew}[1]{\ensuremath{\left[\mtx{#1}\right]}}
-
-\newcommand{\Skew}[1]{\ensuremath{\overset{\sim}{#1}}}
-
-\newcommand{\trans}[2]{\sffl{\mtx{T}}{#1}{#2}}
-\newcommand{\transR}[2]{\sffl{\mtx{R}}{#1}{#2}}
-\newcommand{\transRi}[3]{\sffl{\mtx{R}}{#1}{#2}\raisebox{-2pt}{$\scriptstyle#3$}}
-
-\newcommand{\transp}{{^{T}}}
-\newcommand{\transpc}[1]{\left(#1\right)^T}
-\newcommand{\inv}{{^{-1}}}
-\newcommand{\vecf}[1]{\ensuremath{[#1]\transp}}
-\newcommand{\vecfd}[3]{\ensuremath{[#1 \quad #2 \quad #3]\transp}}
-
-\newcommand{\group}[2]{\underbrace{#1}_{\mbox{#2}}}
+%% === Helper functions: List processing tools ====
 
 
 
+% Converts its second argument into a list structure
+% usage: \fromcsv{\mylist}{foo,bar,baz}
+\newcommand{\fromcsv}[2]{
+  \renewcommand*{\do}[1]{\listadd{#1}{##1}}%
+  \docsvlist{#2}%
+}
+
+% Converts it's second argument into a list structure, after edef'ing them
+% usage: \fromcsve{\mylist}{foo,bar,baz}
+\newcommand{\fromcsve}[2]{%
+  \edef\temp{#2}%
+  \renewcommand*{\do}[1]{\listadd{#1}{##1}}%
+  \expandafter\docsvlist\expandafter{\temp}%
+}
+
+% Counts the number of elements in a list
+% usage: \listcnt{\mycounter}{\mylist}
+\newcommand{\listcnt}[2]{%
+  \renewcommand*{\do}[1]{\stepcounter{#1}}%
+  \dolistloop{#2}%
+}
+
+\newcounter{tempcountN}
+\newcounter{tempcounti}
+
+% A haskell-like function.
+% Splits the list in \init (a list of all elements but the last) and \last.
+\newcommand{\initlast}[1]{%
+\let\init\undefined%
+\let\last\undefined%
+\ifdef{#1}{%
+  \setcounter{tempcountN}{0}%
+  \listcnt{tempcountN}{#1}%
+  \setcounter{tempcounti}{1}%
+  \renewcommand*{\do}[1]{%
+    \ifnumless{\value{tempcounti}}{\value{tempcountN}}{%
+      \listadd\init{##1}%
+    }{%
+      \def\last{##1}%
+    }%
+    \stepcounter{tempcounti}%
+  }%
+  \dolistloop{#1}%
+}{}%
+}
+
+% Joins a list be means of a separator
+% usage: \join{sep}{list}
+\newcommand{\join}[2]{%
+  \def\sep{#1}%
+  \def\last{0}%
+  \let\mylist\undefined%
+  \fromcsv{\mylist}{#2}%
+  \initlast{\mylist}%
+  \renewcommand*{\do}[1]{##1\sep}%
+  \ifdef{\init}{\dolistloop{\init}}{}\ifdef{\last}{\last}{}%
+}
+
+% Joins a list with a comma as separator
+\newcommand{\combine}[1]{%
+  \join{,}{#1}%
+}
 
 
-\newcommand{\ifboolkey}[3]{\ifthenelse{\equal{\commandkey{#1}}{1}}{#2}{#3}}
+% Assertion oneorzero
+% asserts that a list of values only has one non-empty member or none.
+\newcommand{\oneorzero}[1]{%
+  \let\mylist\undefined%
+  \fromcsve{\mylist}{#1}%
+  \setcounter{tempcountN}{0}%
+  \listcnt{tempcountN}{\mylist}%
+  \renewcommand*{\do}[1]{##1}%
+  \ifnumless{\value{tempcountN}}{2}{\dolistloop{\mylist}}{\error{Oneorzero assertion failed. More than one non-empty list value was found: #1 (count \number\value{tempcountN})}}%
+}
+
+
 \newcommand{\ifkey}[3]{\ifthenelse{\equal{\commandkey{#1}}{}}{#3}{#2}}
 \newcommand{\haskey}[1]{\not \equal{\commandkey{#1}}{}}
 
@@ -107,8 +144,10 @@
 % ------------------
 % vecsymbolstyle:    How a true vector should be displayed
 % vecexprstyle:      How a column matrix representation of a vector should be displayed
+% vecindexedstyle:   How an indexed element of a column matrix representation of a vector should be displayed
 % tenssymbolstyle:   How a tensor should be displayed
 % tensexprstyle:     How a matrix representation of a tensor should be displayed
+% tensindexedstyle:  How an indexed element of a matrix representation of a tensor should be displayed
 %
 % choose from \ARROW, \DARROW, \DARROWBOLD, \BOLD, \UNDERLINE, \DUNDERLINE, \DUNDERLINEBOLD
 %  All of these options are in fact latex commands that take one argument.
@@ -177,11 +216,10 @@
 
 \let\vecsymbolstyle\ARROW
 \let\vecexprstyle\UNDERLINE
+\let\vecindexedstyle\UNDERLINE
 \let\tenssymbolstyle\DARROWBOLD
 \let\tensexprstyle\DUNDERLINEBOLD
-
-\let\omitfoo1
-
+\let\tensindexedstyle\DUNDERLINEBOLD
 
 % Omitting mechanism:
 %
@@ -191,6 +229,7 @@
 %    make sthat everything will be omitted
 % \newcommand{\omitlogicfoo}{1}
 %    makes that \omitlogicfoo will be tested to see if foo must be omitted
+% 
 
 \newcommand{\omitlogicbar}{0}
 \newcommand{\omitlogicbaz}{1}
@@ -198,30 +237,26 @@
 \newcommand{\checkomit}[2]{
  \ifcsundef{omitall}{
   \ifcsundef{omit#1}{
-    \ifcsundef{omitlogic#1}{
-      #2
-    }{\ifthenelse{\equal{\csname omitlogic#1\endcsname}{1}}{}{#2}}
+   \ifcsdef{omitlist#1}{
+     \ifinlistcs{#2}{omitlist#1}{}{
+      \ifcsundef{omitlogic#1}{#2}{\ifthenelse{\equal{\csname omitlogic#1\endcsname}{1}}{}{#2}}
+     }
+   }{
+    \ifcsundef{omitlogic#1}{#2}{\ifthenelse{\equal{\csname omitlogic#1\endcsname}{1}}{}{#2}}
+   }
   }{}
  }{}
 }
 
-\newcommand{\checkkey}[1]{
-  \checkomit{#1}{\commandkey{#1}}
-}
 
-\newcommand{\checkkeys}[1]{
+\newcommand{\checkkey}[1]{
   \checkomit{#1}{\storedkey{#1}}
 }
-
-\let\vectorstyle\prettydefault
-
-\newcommand{\style}[2]{\ifthenelse{\equal{\vectorstyle}{#1}}{#2}{}}
-
 
 \newcommand{\ifblanc}[3]{\ifstrequal{#1}{}{#2}{#3}}
 
 \newcommand{\TensSymbol}[1]{
-  \commandkeyblank{expressedIn}{
+  \commandkeyblankt{expressedIn}{
     \tenssymbolstyle{#1}
   }{
     \tensexprstyle{#1}
@@ -229,13 +264,17 @@
 }
 
 \newcommand{\VecSymbol}[1]{
-  \commandkeyblank{expressedIn}{
+  \commandkeyblankt{expressedIn}{
     \vecsymbolstyle{#1}
   }{
     \vecexprstyle{#1}
   }
 }
 
+
+% storekeys
+% Accepts a csv list of commandkey names.
+% For each commandkey it stores the edef'ed content in a variable.
 % arg: csv list
 \newcommand{\storekeys}[1]{
   \renewcommand*{\do}[1]{
@@ -257,6 +296,7 @@
 }
 
 
+
 % How vector notation is represented:    
 %
 %                                      u
@@ -267,41 +307,30 @@
 %
 \newcommand{\SymbolMarkupu}[1]{\overset{\commandkey{u}}{#1}}
 \newcommand{\SymbolMarkupl}[1]{\underset{\commandkey{l}}{#1}}
-\newkeycommand\SymbolMarkup[ul,ll,lr,ur,u,l][1]{
- \ensuremath{
-    \commandkeyblank{u}{\let\myopu\identityfun}{\let\myopu\SymbolMarkupu}
-    \commandkeyblank{l}{\let\myopl\identityfun}{\let\myopl\SymbolMarkupl}
-    \myopl{
-      \myopu{
-	  {_{\commandkey{ll}}^{\commandkey{ul}}}{#1}_{\commandkey{lr}}^{\commandkey{ur}}
-      }
-    }
-  }
+\newkeycommand\SymbolMarkup[ul,ll,lr,ur,u,l][1]{%
+ \ensuremath{%
+    \commandkeyblank{u}{\let\myopu\identityfun}{\let\myopu\SymbolMarkupu}%
+    \commandkeyblank{l}{\let\myopl\identityfun}{\let\myopl\SymbolMarkupl}%
+    \myopl{%
+      \myopu{%
+	  {_{\commandkey{ll}}^{\commandkey{ul}}}{#1}_{\commandkey{lr}}^{\commandkey{ur}}%
+      }%
+    }%
+  }%
 }
 
-\newcommand{\inheritkey}[1]{#1=\commandkey{#1}}
-\newcommand{\inheritkeys}[1]{#1=\csname key#1\endcsname}
-
-\newcommand{\ifboolkeys}[3]{\ifnumequal{\commandkey{#1}}{1}{#2}{#3}}
-
-
-\newcommand{\VectorDiff}[2]{\frac{\mathrm{d} #1}{{^{#2}}\mathrm{d}t}}
-\newcommand{\VectorDiffQuiet}[2]{\frac{\mathrm{d} #1}{\mathrm{d}t}}
-
-
-% problem: my d/dt symbol contains a lot of whitespace
-%
+\newcommand{\ifboolkey}[3]{\ifnumequal{\commandkey{#1}}{1}{#2}{#3}}
 
 % A d/dt notation is used when the vector/tensor is true
 \newcommand{\DDTVEC}[1]{
-  \commandkeyblank{diff}{#1}{
-    \commandkeyblank{expressedIn}{
+  \commandkeyblankt{diff}{#1}{
+    \commandkeyblankt{expressedIn}{
       \frac{\mathrm{d}#1}{{^\commandkey{diff}}\mathrm{d}t}
     }{
       \commandkeysequal{diff}{expressedIn}{
 	#1
       }{
-	\transR{\commandkey{diff}}{\commandkey{expressedIn}} . #1
+	{_{\commandkey{expressedIn}}^{\commandkey{diff}}}\tensexprstyle{\TransformationSymbol} . #1
       }
     }
   }
@@ -309,8 +338,8 @@
 
 % An overhead dot will be used when the vector/tensor is expressed
 \newcommand{\DOTEXPR}[1]{
-  \commandkeyblank{expressedIn}{#1}{
-    \commandkeyblank{diff}
+  \commandkeyblankt{expressedIn}{#1}{
+    \commandkeyblankt{diff}
       {#1}
       {\dot{#1}}
   }
@@ -320,18 +349,16 @@
 \let\modifierDiffOuter\DDTVEC
 
 \newcommand{\SKEWTILDE}[1]{
-  \ifboolkeys{skew}{\ensuremath{\overset{\sim}{#1}}}{#1}
+  \ifboolkey{skew}{\ensuremath{\overset{\sim}{#1}}}{#1}
 }
 
 \let\modifierSkewOuter\SKEWTILDE
 
-
-
-\newkeycommand\SymbolMarkupVectorModifier[ul,ll,lr,ur,u,l,diff,expressedIn,bool skew=false][1]{
- \storekeys{ul,ll,lr,ur,u,l}
- \ensuremath{
-    \modifierDiffOuter{
-      \modifierSkewOuter{
+\newkeycommand\SymbolMarkupVectorModifier[ul,ll,lr,ur,u,l,diff,expressedIn,bool skew=false][1]{%
+ \storekeys{ul,ll,lr,ur,u,l}%
+ \ensuremath{%
+    \modifierDiffOuter{%
+      \modifierSkewOuter{%
 	\SymbolMarkup[
 	    ul=\storedkey{ul},
 	    ll=\storedkey{ll},
@@ -339,321 +366,190 @@
 	    ur=\storedkey{ur},
 	    u=\storedkey{u},
 	    l=\storedkey{l}
-	]{\modifierDiffInner{#1}}
-      }
-    }
-  }
+	]{\modifierDiffInner{#1}}%
+      }%
+    }%
+  }%
 }
 
 
-% usage: \fromcsv{\mylist}{foo,bar,baz}
-\newcommand{\fromcsv}[2]{
-  \renewcommand*{\do}[1]{\listadd{#1}{##1}}
-  \docsvlist{#2}
-}
 
-% usage: \fromcsv{\mylist}{foo,bar,baz}
-\newcommand{\fromcsve}[2]{
-  \edef\temp{#2}
-  \renewcommand*{\do}[1]{\listadd{#1}{##1}}
-  \expandafter\docsvlist{\temp}
-}
-
-
-% Counts the number of elements in a list
-% usage: \listcnt{\mycounter}{\mylist}
-\newcommand{\listcnt}[2]{
-  \renewcommand*{\do}[1]{\stepcounter{#1}}
-  \dolistloop{#2}
-}
-
-\newcounter{tempcountN}
-\newcounter{tempcounti}
-
-% Splits the list in \init (a list of all elements but the last) and \last.
-\newcommand{\initlast}[1]{
-\let\init\undefined
-\let\last\undefined
-\ifdef{#1}{
-  \setcounter{tempcountN}{0}
-  \listcnt{tempcountN}{#1}
-  \setcounter{tempcounti}{1}
-  \renewcommand*{\do}[1]{
-    \ifnumless{\value{tempcounti}}{\value{tempcountN}}{
-      \listadd\init{##1}
-    }{
-      \def\last{##1}
-    }
-    \stepcounter{tempcounti}
-  }
-  \dolistloop{#1}
-}{}
-}
-
-\newcommand{\join}[2]{
-\def\sep{#1}
-\def\last{0}
-\let\mylist\undefined
-\fromcsv{\mylist}{#2}
-\initlast{\mylist}
-\renewcommand*{\do}[1]{##1\sep}
-\ifdef{\init}{\dolistloop{\init}}{}\ifdef{\last}{\last}{}
-}
-
-\newcommand{\combine}[1]{
-\join{,}{#1}
-}
 
 % \storedkey{object},\storedkey{actingOn},\storedkey{end}
 
-\newcommand{\VECTORPRETTYDEFAULT}[2]{
-    \storekeys{object,wrt,expressedIn,diff,actingOn,end,start,wrt,actingFrom,id,index}
+\newcommand{\VECTORPRETTYDEFAULT}[2]{%
+    \storekeys{around,object,wrt,expressedIn,diff,actingOn,end,start,wrt,actingFrom,id,index}%
     \SymbolMarkupVectorModifier[
-	ul=\noexpand\combine{\storedkey{object},\storedkey{id},\storedkey{actingOn},\storedkey{end}},
-	ll=\noexpand\combine{\checkkeys{start},\checkkeys{wrt},\checkkeys{actingFrom}},
-	ur=\storedkey{expressedIn},
-        lr=\noexpand\combine{\checkkeys{id},\checkkeys{index}},
+        ul=\noexpand\combine{\checkkey{object},\checkkey{id},\checkkey{actingOn},\checkkey{end}},
+        ll=\noexpand\combine{\checkkey{start},\checkkey{wrt},\checkkey{actingFrom}},
+        ur=\checkkey{expressedIn},
+        lr=\noexpand\combine{\checkkey{id},\checkkey{index}},
+        u=\checkkey{around},
         diff=\storedkey{diff},
         expressedIn=\storedkey{expressedIn}
-    ]{\VecSymbol{#1}}
+    ]{\VecSymbol{#1}}%
+}
+
+\newcommand{\VECTORFLAT}[2]{
+    \storekeys{around,object,wrt,expressedIn,diff,actingOn,end,start,wrt,actingFrom,id,index}%
+    {\tt%
+    \ifthenelse{\equal{\commandkey{expressedIn}}{}}{\error{cannot represent this: I need expressedIn}}{}%
+    \ifthenelse{\(\not \equal{\commandkey{diff}}{}\)}{%
+      \ifthenelse{\equal{\commandkey{diff}}{\commandkey{expressedIn}}}{d}{\error{cannot represent this: diff and expressedIn don't match}}%
+    }{}%
+    #2\_\oneorzero{\storedkey{object},\storedkey{end},\storedkey{actingOn}}\oneorzero{\storedkey{wrt},\storedkey{start},\storedkey{actingFrom}}\noexpand\oneorzero{\storedkey{expressedIn}}\oneorzero{\storedkey{around}}%
+    }%
+}
+
+\newcommand{\UNITVECTORPRETTYDEFAULT}[2]{
+    \storekeys{frame,axis,expressedIn,index,components,diff,id}%
+    \def\axis{\storedkey{axis}}%
+    \def\mysymbol{%
+        \ifthenelse{\equal{\axis}{x} \or \equal{\axis}{1}}{i}{%
+          \ifthenelse{\equal{\axis}{y} \or \equal{\axis}{2}}{j}{%
+            \ifthenelse{\equal{\axis}{z} \or \equal{\axis}{3}}{k}{#1}%
+          }%
+        }%
+    }%
+    \SymbolMarkupVectorModifier[
+        ur=\checkkey{expressedIn},
+        ul=\checkkey{frame},
+        lr=\checkkey{index},
+        diff=\storedkey{diff},
+        expressedIn=\storedkey{expressedIn}
+    ]{\VecSymbol{\mysymbol}}%
+}
+
+\newcommand{\TENSORPRETTYDEFAULT}[2]{%
+    \storekeys{around,object,wrt,expressedIn,diff,actingOn,end,start,wrt,actingFrom,id,index,frame}%
+    \SymbolMarkupVectorModifier[
+        ul=\noexpand\combine{\checkkey{object},\checkkey{id},\checkkey{frame}},
+        ur=\checkkey{expressedIn},
+        lr=\noexpand\combine{\checkkey{id},\checkkey{index}},
+        ll=\checkkey{wrt},
+        u=\checkkey{around},
+        expressedIn=\storedkey{expressedIn}
+    ]{\TensSymbol{#1}}%
 }
 
 \let\vectorformatter\VECTORPRETTYDEFAULT
+\let\tensorformatter\TENSORPRETTYDEFAULT
+\let\unitvectorformatter\UNITVECTORPRETTYDEFAULT
 
 
-%\newcommand{\ifboolkey}[3]{\ifthenelse{\equal{\commandkey{#1}}{1}}{#2}{#3}}
-
-\newkeyenvironment{kineticsoptions}[bool omitwrtworld=false,bool omitaroundeqobject=false,bool omitall=false, bool omitexpressedin = false, bool flat=false]{
-\ifboolkey{omitwrtworld}{\let\omitwrtworld1}{\let\omitwrtworld\undefined}
-\ifboolkey{omitaroundeqobject}{\let\omitaroundeqobject1}{\let\omitaroundeqobject\undefined}
-\ifboolkey{omitall}{\let\omitall1}{\let\omitall\undefined}
-\ifboolkey{omitexpressedin}{\let\omitexpressedin1}{\let\omitexpressedin\undefined}
-}
-{
-\let\omitwrtworld\undefined
-\let\omitaroundeqobject\undefined
-\let\omitall\undefined
-\let\omitexpressedin\undefined
+%% === omitting functionality ==
+\newcommand{\setomitif}[2]{
+  \listcseadd{omitlist#2}{#1}
 }
 
-
-\newcommand{\InertiaTensorSymbol}{\textrm{I}}
-\newcommand{\InertiaTensorName}{I}
-\newcommand{\AngularVelocitySymbol}{\Omega}
-\newcommand{\AngularVelocityName}{w}
-\newcommand{\AngularAccelerationSymbol}{\alpha}
-\newcommand{\AngularAccelerationName}{alpha}
-\newcommand{\TorqueSymbol}{\mathcal{T}}
-\newcommand{\TorqueName}{T}
-\newcommand{\ForceSymbol}{F}
-\newcommand{\ForceName}{F}
-\newcommand{\ImpulseSymbol}{p}
-\newcommand{\ImpulseName}{p}
-\newcommand{\AngularImpulseSymbol}{\mathcal{H}}
-\newcommand{\AngularImpulseName}{H}
-\newcommand{\DisplacementSymbol}{\textrm{r}}
-\newcommand{\DisplacementName}{r}
-\newcommand{\unitVectorSymbol}{e}
-\newcommand{\unitVectorName}{e}
-\newcommand{\rvecd}[1]{
-  \ifkey{expressedIn}{
-    \ifthenelse{\not \equal{}{\commandkey{diff}}}
-      {\dot{\rvec{#1}}}
-      {\rvec{#1}}
-    }
-   {\vec{#1}}
-}
-\newcommand{\rtensd}[1]{\ifkey{expressedIn}{\rtens{#1}}{\tens{#1}}}
-
-
-\newkeycommand\Vector[expressedIn,index][1]{
-\ifthenelse{\isundefined{\omitall}}{
-\rvec{#1}^{\commandkey{expressedIn}}_{\commandkey{index}}
+\newenvironment{omitenv}[1]{
+  \renewcommand*{\do}[1]{
+    \setomit{##1}
+  }
+  \docsvlist{#1}
 }{
-\rvec{#1}_{\commandkey{index}}
-}
+
 }
 
-\newkeycommand\Tensor[expressedIn,index][1]{
-\ifthenelse{\isundefined{\omitall}}{
-\rtens{#1}^{\commandkey{expressedIn}}_{\commandkey{index}}
-}
-{
-\rtens{#1}^_{\commandkey{index}}
-}
+%
+% \setomit{all}
+% \setomit{object}
+% \setomit{wrt=0}
+\newcommand{\setomit}[1]{
+  \IfSubStr*{#1}{=}{
+    \StrBefore{#1}{=}[\mykey]
+    \StrBehind{#1}{=}[\myvalue]
+    \listcseadd{omitlist\mykey}{\myvalue}
+    %\setomitif{\mykey}{\myvalue}
+  }{
+    \expandafter\let\csname omit#1\endcsname1
+  }
 }
 
-\newcommand{\vc}[2]{\Vector[expressedIn=#2]{#1}}
-\newcommand{\vci}[3]{\Vector[expressedIn=#2,index=#3]{#1}}
+
+\newcommand{\setomitting}[1]{
+  \renewcommand*{\do}[1]{
+    \setomit{##1}
+  }
+  \docsvlist{#1}
+}
+
+\newcommand{\omitting}[2]{\begingroup\setomitting{#1}#2\endgroup}
+
 
 
 
 \newcommand{\identity}[2]{#1}
 \newcommand{\identityfun}[1]{#1} % should be renamed identity
 
-\newcommand{\checkomitall}[1]{\ifthenelse{\isundefined{\omitall}}{#1}{}}
-\newcommand{\checkomitexpressedin}[1]{\ifthenelse{\isundefined{\omitexpressedin}}{#1}{}}
-
-% Processing happens through 2 layers:
-% style: prettydefault - flat
-% omits
-
-\newcommand{\VectorMarkupPrimitive}[2]{
-\ifthenelse{\not \equal{}{\commandkey{diff}}}{
-  \ifthenelse{\equal{}{\commandkey{expressedIn}}}{
-    \ifthenelse{\not \isundefined{\omitall}}{
-      \let\myop\VectorDiffQuiet
-    }{
-      \let\myop\VectorDiff
-    }
-  }{
-    \ifthenelse{\equal{\commandkey{diff}}{\commandkey{expressedIn}}}{
-      \let\myop\identity
-    }{
-      \transR{\commandkey{diff}}{\commandkey{expressedIn}} . 
-      \let\myop\identity
-    }
-  }
-}{
-  \let\myop\identity
-}
-\myop{
-       \overset{
-          \ifthenelse{\not \isundefined{\omitaroundeqobject} \and \equal{\commandkey{object}}{\commandkey{around}}}{}{\checkomitall{\commandkey{around}}}
-          \ifboolkey{skew}{\sim}{}
-       }{
-         \sff{\rvecd{#1}}
-         {\checkomitall{\commandkey{object}\commandkey{actingOn}\commandkey{end}}}
-         {\checkomitall{\commandkey{start}}\ifthenelse{\not \isundefined{\omitwrtworld} \and \equal{\commandkey{wrt}}{0}}{}{\checkomitall{\commandkey{wrt}}}\checkomitall{\commandkey{actingFrom}}}
-         {\checkomitall{\checkomitexpressedin{\commandkey{expressedIn}}}}
-         {\commandkey{id}\checkomitall{\ifthenelse{\equal{}{\commandkey{id}}}{}{\ifthenelse{\equal{}{#2}}{}{}}#2}}
-       }
-  }{\commandkey{diff}}
-}
-
-\newcommand{\VectorMarkup}[1]{
-\ifthenelse{\not \equal{}{\commandkey{components}}}{
-\let\omitexpressedinB\omitexpressedin
-%\let\omitexpressedin1
-\vecv{\VectorMarkupPrimitive{#1}{x}}{\VectorMarkupPrimitive{#1}{y}}{\VectorMarkupPrimitive{#1}{z}}_{\let\omitexpressedin\omitexpressedinB\checkomitall{\checkomitexpressedin{\commandkey{expressedIn}}}}
-}{
-\VectorMarkupPrimitive{#1}{\commandkey{index}}
-}
-}
-
-\newcommand{\TensorMarkup}[1]{
-\ifthenelse{\(\not \equal{\commandkey{diff}}{}\) \and \(\not \equal{\commandkey{diff}}{\commandkey{expressedIn}}\)}
-{\ifthenelse{\not \isundefined{\omitall}}{\let\myop\VectorDiffQuiet}{\let\myop\VectorDiff}}{\let\myop\identity}
-\myop{
-       \overset{
-          \ifthenelse{\not \isundefined{\omitaroundeqobject} \and \equal{\commandkey{object}}{\commandkey{around}}}{}{\checkomitall{\commandkey{around}}}
-       }{
-         \sff{\rtensd{#1}}
-         {\checkomitall{\commandkey{object}\commandkey{actingOn}}}
-         {\ifthenelse{\not \isundefined{\omitwrtworld} \and \equal{\commandkey{wrt}}{0}}{}{\checkomitall{\commandkey{wrt}}}}
-         {\checkomitall{\commandkey{expressedIn}}}
-         {\checkomitall{\commandkey{index}}}
-       }
-  }{\commandkey{diff}}
-}
-
 \newcommand{\error}[1]{?#1?}
 
-\newcommand{\SymbolFlatRepresentation}[2]{
-  {\tt
-    \ifthenelse{\equal{\commandkey{expressedIn}}{}}{\error{cannot represent this: I need expressedIn}}{}
-    \ifthenelse{\(\not \equal{\commandkey{diff}}{}\)}{
-      \ifthenelse{\equal{\commandkey{diff}}{\commandkey{expressedIn}}}{d}{\error{cannot represent this: diff and expressedIn don't match}}
-    }{}
-    #1\_#2
-  }
+
+\newcommand{\genericformatter}[2]{%
+  \def\vectorcontext{#2}
+  #1{\csname #2Symbol\endcsname}{\csname #2Name\endcsname}%
 }
 
 \newkeycommand\AngularImpulse[around,object,wrt,expressedIn,diff,components,id]{%
-  \vectorformatter{\AngularImpulseSymbol}{\AngularImpulseName}
+  \genericformatter{\vectorformatter}{AngularImpulse}
 }
 
 \newkeycommand\Torque[around,actingOn,actingFrom,expressedIn,diff,components,id]{%
-  \vectorformatter{\TorqueSymbol}{\TorqueName}
+  \genericformatter{\vectorformatter}{Torque}
 }
 
 \newkeycommand\Force[actingOn,actingFrom,expressedIn,diff,components,id]{%
- \vectorformatter{\ForceSymbol}{\ForceName}
+  \genericformatter{\vectorformatter}{Force}
 }
 
 \newkeycommand\Displacement[start,end,expressedIn,index,diff,components,id]{%
- \vectorformatter{\DisplacementSymbol}{\DisplacementName}
+  \genericformatter{\vectorformatter}{Displacement}
 }
 
 \newkeycommand\AngularVelocity[object,wrt,expressedIn,index,diff,components,id,bool skew=false]{%
- \vectorformatter{\AngularVelocitySymbol}{\AngularVelocityName}
+  \genericformatter{\vectorformatter}{AngularVelocity}
 }
 
 \newkeycommand\AngularAcceleration[object,wrt,expressedIn,index,diff,components,id]{%
- \vectorformatter{\AngularAccelerationSymbol}{\AngularAccelerationName}
+  \genericformatter{\vectorformatter}{AngularAcceleration}
 }
 
 \newkeycommand\Velocity[object,wrt,expressedIn,index,diff,components,id]{%
- \vectorformatter{\VelocitySymbol}{\VelocityName}
+  \genericformatter{\vectorformatter}{Velocity}
 }
 
 \newkeycommand\Impulse[object,wrt,expressedIn,index,diff,components,id]{%
- \vectorformatter{\ImpulseSymbol}{\ImpulseName}
+  \genericformatter{\vectorformatter}{Impulse}
 }
 
 \newkeycommand\Acceleration[object,wrt,expressedIn,index,diff,components,id]{%
- \vectorformatter{\AccelerationSymbol}{\AccelerationName}
+  \genericformatter{\vectorformatter}{Acceleration}
 }
 
 
 \newkeycommand\InertiaTensor[object,around,expressedIn,index,diff,id]{%
- \style{\prettydefault}{\TensorMarkup{\InertiaTensorSymbol}}
- \style{\flatdefault}{\SymbolFlatRepresentation{v}{\commandkey{object}\commandkey{expressedIn}\commandkey{around}}}
+  \genericformatter{\tensorformatter}{InertiaTensor}
 }
 
 \newkeycommand\GenericVector[object,wrt,expressedIn,index,diff,components,id,bool skew=false]{%
- \style{\prettydefault}{\VectorMarkup{v}}
- \style{\flatdefault}{\SymbolFlatRepresentation{v}{\commandkey{object}\commandkey{wrt}\commandkey{expressedIn}}}
+  \genericformatter{\vectorformatter}{GenericVector}
 }
 
-\newkeycommand\GenericVectorComponents[expressedIn,components=vertical][3]{
-\vecv{#1}{#2}{#3}_{\checkomitall{\checkomitexpressedin{\commandkey{expressedIn}}}}
+\newkeycommand\UnitVector[frame,axis,expressedIn,index,components,diff,id]{%
+ \genericformatter{\unitvectorformatter}{UnitVector}
 }
 
-% note : keys are lost after this command ends, so use only for tail recursion
-\newkeycommand\withkeys[object,wrt,expressedIn,index,diff,components,id][1]{%
-\commandkey{index}
-\commandkey{object}
-\commandkey{components}
-#1
-}
-
-\newcommand\expressIn[2]{\underset{#2}{\mathrm{project}}\left(#1\right)}
-
-
-\newkeycommand\disp[expressedIn,index][2]{\edef\mytemp{\commandkey{expressedIn}}\edef\mytempp{\commandkey{index}}\expandafter\Displacement[start=#1,end=#2,expressedIn=\mytemp,index=\mytempp]}
-
-\newkeycommand\UnitVector[frame,axis,expressedIn,index,components,id]{%
-  \ifthenelse{\not{\equal{}{\commandkey{components}}} \and \( \equal{}{\commandkey{frame}} \or \equal{}{\commandkey{expressedIn}} \or \equal{\commandkey{expressedIn}}{\commandkey{frame}} \) }
-  {
-    \vecv{\ifthenelse{\equal{\commandkey{axis}}{x} \or \equal{\commandkey{axis}}{1}}{1}{0}}{\ifthenelse{\equal{\commandkey{axis}}{y} \or \equal{\commandkey{axis}}{2}}{1}{0}}{\ifthenelse{\equal{\commandkey{axis}}{z} \or \equal{\commandkey{axis}}{3}}{1}{0}}_{\checkomitall{\checkomitexpressedin{\commandkey{expressedIn}}}}
-  }
-  {
-    \ifthenelse{\equal{\commandkey{axis}}{x} \or \equal{\commandkey{axis}}{1}}
-    {\sff{\rvecd{i}}{\commandkey{frame}}{}{\commandkey{expressedIn}}{\commandkey{index}}}{
-    \ifthenelse{\equal{\commandkey{axis}}{y} \or \equal{\commandkey{axis}}{2}}
-    {\sff{\rvecd{j}}{\commandkey{frame}}{}{\commandkey{expressedIn}}{\commandkey{index}}}{
-    \ifthenelse{\equal{\commandkey{axis}}{z} \or \equal{\commandkey{axis}}{3}}
-    {\sff{\rvecd{k}}{\commandkey{frame}}{}{\commandkey{expressedIn}}{\commandkey{index}}}{
-    \sff{\rvecd{\unitVectorSymbol}}{\commandkey{frame}}{\commandkey{axis}}{\commandkey{expressedIn}}{}
-    }
-    }
-    }
-  }
+\newkeycommand\Transformation[frame,wrt,expressedIn,diff,id]{%
+  \genericformatter{\tensorformatter}{Transformation}
 }
 
 
+% Helper functions
 \newkeycommand{\ev}[expressedIn,index][2]{\edef\temp{\commandkey{expressedIn}}\edef\tempp{\commandkey{index}}\UnitVector[axis=#1,frame=#2,expressedIn=\temp,index=\tempp]}
+\newcommand{\transR}[2]{\Transformation[frame=#1,wrt=#2,expressedIn=#2]}
+
+
+\newcommand{\trans}[2]{\tensexprstyle{T}{#1}{#2}}
 
 
 
