@@ -254,36 +254,39 @@
 %    makes that \omitlogicfoo will be tested to see if foo must be omitted
 % 
 
+% 
 \newcommand{\omitlogicexpressedIn}[1]{%
- %\IfStrEq{t}{Transformation}{}{}
- %\ifthenelse{\equals{5}{6}}{}{}
-  %bar
-  %\ifthenelse{\equal{\storedkey{expressedIn}}{\storedkey{wrt}}}{}{#1}%
- %}{foo #1}%
- #1%
+ \IfStrEq*{\vectorcontext}{Transformation}{%
+  \ifthenelse{\equal{\storedkey{expressedIn}}{\storedkey{wrt}}}{\let\result1}{}%
+ }{}%
 }
 
+% result is returned as \result
+% \undefined -> don't omit
+% anything else -> omit
+%  \checkomit{wrt}{value}
 \newcommand{\checkomit}[2]{%
+ \let\result\undefined
  \ifcsundef{omitall}{%
   \ifcsundef{omit#1}{%
    \ifcsdef{omitlist#1}{%
-     \ifinlistcs{#2}{omitlist#1}{}{%
-      \ifcsundef{omitlogic#1}{#2}{%
+     \xifinlistcs{#2}{omitlist#1}{\let\result1}{%
+      \ifcsundef{omitlogic#1}{}{%
         \csname omitlogic#1\endcsname{#2}%
       }%
      }%
    }{%
-    \ifcsundef{omitlogic#1}{#2}{%
+    \ifcsundef{omitlogic#1}{}{%
       \csname omitlogic#1\endcsname{#2}%
     }%
    }%
-  }{}%
- }{}%
+  }{\let\result1}%
+ }{\let\result1}%
 }
 
 
 \newcommand{\checkkey}[1]{%
-  \checkomit{#1}{\storedkey{#1}}%
+  \ifcsdef{shouldomit#1}{}{\storedkey{#1}}%
 }
 
 \newcommand{\ifblanc}[3]{\ifstrequal{#1}{}{#2}{#3}}
@@ -321,6 +324,17 @@
     }{%
       \expandafter\edefprotect\csname storedkey##1\endcsname{\commandkey{##1}}%
     }%
+  }%
+  \docsvlist{#1}%
+  \calcomits{#1}%
+}
+
+% calculate omits
+\newcommand{\calcomits}[1]{%
+  \renewcommand*{\do}[1]{%
+    \edefprotect\mytempa{\storedkey{##1}}%
+    \checkomit{##1}{\mytempa}%
+    \expandafter\let\csname shouldomit##1\endcsname\result
   }%
   \docsvlist{#1}%
 }
