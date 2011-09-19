@@ -399,28 +399,28 @@
 % \storedkey{object},\storedkey{actingOn},\storedkey{end}
 
 \newcommand{\VECTORPRETTYDEFAULT}[2]{%
-    \storekeys{around,object,wrt,expressedIn,diff,actingOn,end,start,wrt,actingFrom,id,index}%
+    \storekeys{around,object,wrt,expressedIn,diff,on,end,start,wrt,from,id,index,at}%
     \SymbolMarkupVectorModifier[
-        ul=\noexpand\combine{\checkkey{object},\checkkey{id},\checkkey{actingOn},\checkkey{end}},
-        ll=\noexpand\combine{\checkkey{start},\checkkey{wrt},\checkkey{actingFrom}},
+        ul=\noexpand\combine{\checkkey{object},\checkkey{id},\checkkey{on},\checkkey{end}},
+        ll=\noexpand\combine{\checkkey{start},\checkkey{wrt},\checkkey{from}},
         ur=\checkkey{expressedIn},
         lr=\noexpand\combine{\checkkey{id},\checkkey{index}},
-        u=\checkkey{around},
+        u=\noexpand\combine{\checkkey{around},\checkkey{at}},
         diff=\storedkey{diff},
         expressedIn=\storedkey{expressedIn}
     ]{\VecSymbol{#1}}%
 }
 
 \newcommand{\VECTORFLAT}[2]{
-    \storekeys{around,object,expressedIn,diff,actingOn,end,start,wrt,actingFrom,id,index}%
+    \storekeys{around,object,expressedIn,diff,on,end,start,wrt,from,id,index,at}%
     {\tt%
     \ifthenelse{\equal{\commandkey{expressedIn}}{}}{\error{cannot represent this: I need expressedIn}}{}%
     \ifthenelse{\(\not \equal{\commandkey{diff}}{}\)}{%
       \ifthenelse{\equal{\commandkey{diff}}{\commandkey{expressedIn}}}{d}{\error{cannot represent this: diff and expressedIn don't match}}%
     }{}%
     #2\_%
-      \oneorzero{\checkkey{object},\checkkey{end},\checkkey{actingOn}}%
-      \oneorzero{\checkkey{wrt},\checkkey{start},\checkkey{actingFrom}}%
+      \oneorzero{\checkkey{object},\checkkey{end},\checkkey{on}}%
+      \oneorzero{\checkkey{wrt},\checkkey{start},\checkkey{from}}%
       \oneorzero{\checkkey{expressedIn}}%
       \oneorzero{\checkkey{around}}%
     }%
@@ -533,11 +533,11 @@
   \genericformatter{\vectorformatter}{AngularImpulse}
 }
 
-\newkeycommand\Torque[around,actingOn,actingFrom,expressedIn,diff,components,id]{%
+\newkeycommand\Torque[around,on,from,expressedIn,diff,components,id]{%
   \genericformatter{\vectorformatter}{Torque}
 }
 
-\newkeycommand\Force[actingOn,actingFrom,expressedIn,diff,components,id]{%
+\newkeycommand\Force[on,from,at,expressedIn,diff,components,id]{%
   \genericformatter{\vectorformatter}{Force}
 }
 
@@ -595,6 +595,17 @@
 
 
 \newcommand{\Htrans}[2]{\HomogenousTransformation[frame=#1,wrt=#2,expressedIn=#2]}
+
+\newkeycommand\VectorComponents[expressedIn][1]{%
+  \storekeys{expressedIn}%
+  \renewcommand*{\do}[1]{%
+    ##1 \\%
+  }%
+  \begin{pmatrix}%
+  \docsvlist{#1}%
+  \end{pmatrix}_\checkkey{expressedIn}%
+}
+
 
 
 
