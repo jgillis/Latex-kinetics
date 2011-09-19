@@ -54,7 +54,7 @@
 % Converts it's second argument into a list structure, after edef'ing them
 % usage: \fromcsve{\mylist}{foo,bar,baz}
 \newcommand{\fromcsve}[2]{%
-  \edef\temp{#2}%
+  \edefprotect\temp{#2}%
   \renewcommand*{\do}[1]{\listadd{#1}{##1}}%
   \expandafter\docsvlist\expandafter{\temp}%
 }
@@ -102,9 +102,27 @@
   \ifdef{\init}{\dolistloop{\init}}{}\ifdef{\last}{\last}{}%
 }
 
+% Joins a list be means of a separator
+% usage: \join{sep}{list}
+\newcommand{\joinr}[3]{%
+  \def\sep{#2}%
+  \def\last{0}%
+  \let\mylist\undefined%
+  \fromcsve{\mylist}{#3}%
+  \initlast{\mylist}%
+  \def#1{}%
+  \renewcommand*{\do}[1]{\edefprotect#1{#1##1\sep}}%
+  \ifdef{\init}{\dolistloop{\init}}{}\ifdef{\last}{\edefprotect#1{#1\last}}{}%
+}
+
 % Joins a list with a comma as separator
 \newcommand{\combine}[1]{%
   \join{,}{#1}%
+}
+
+% Joins a list with a comma as separator
+\newcommand{\combiner}[2]{%
+  \joinr{#1}{,}{#2}%
 }
 
 
@@ -330,8 +348,8 @@
 \newcommand{\SymbolMarkupl}[1]{\underset{\commandkey{l}}{#1}}
 \newkeycommand\SymbolMarkup[ul,ll,lr,ur,u,l][1]{%
  \ensuremath{%
-    \commandkeyblank{u}{\let\myopu\identity}{\let\myopu\SymbolMarkupu}%
-    \commandkeyblank{l}{\let\myopl\identity}{\let\myopl\SymbolMarkupl}%
+    \commandkeyblankt{u}{\let\myopu\identity}{\let\myopu\SymbolMarkupu}%
+    \commandkeyblankt{l}{\let\myopl\identity}{\let\myopl\SymbolMarkupl}%
     \myopl{%
       \myopu{%
 	  {_{\commandkey{ll}}^{\commandkey{ul}}}{#1}_{\commandkey{lr}}^{\commandkey{ur}}%
@@ -371,10 +389,12 @@
 
 \newcommand{\SKEWTILDE}[1]{%
   \edefprotect\myskew{\storedkey{skew}}%
-  \IfSubStr*{\myskew}{1}{\ensuremath{\overset{\sim}{#1}}}{#1}%
-}
+  \IfSubStr*{\myskew}{1}{\tilde{#1}}{#1}%
+} % \sim
 
 \let\modifierSkewOuter\SKEWTILDE
+
+\let\modifierSkewInner\identity
 
 \newkeycommand\SymbolMarkupVectorModifier[ul,ll,lr,ur,u,l,diff,expressedIn,skew][1]{%
  \storekeys{ul,ll,lr,ur,u,l}%
@@ -388,7 +408,7 @@
 	    ur=\storedkey{ur},
 	    u=\storedkey{u},
 	    l=\storedkey{l}
-	]{\modifierDiffInner{#1}}%
+	]{\modifierDiffInner{\modifierSkewInner{#1}}}%
       }%
     }%
   }%
@@ -401,12 +421,13 @@
 
 \newcommand{\VECTORPRETTYDEFAULT}[2]{%
     \storekeys{around,object,wrt,expressedIn,diff,on,end,start,wrt,from,id,index,at,skew}%
+    \combiner{\myu}{\checkkey{around},\checkkey{at}}% u and l must be edef'able
     \SymbolMarkupVectorModifier[
         ul=\noexpand\combine{\checkkey{object},\checkkey{id},\checkkey{on},\checkkey{end}},
         ll=\noexpand\combine{\checkkey{start},\checkkey{wrt},\checkkey{from}},
         ur=\checkkey{expressedIn},
         lr=\noexpand\combine{\checkkey{id},\checkkey{index}},
-        u=\noexpand\combine{\checkkey{around},\checkkey{at}},
+        u=\myu,
         diff=\storedkey{diff},
         expressedIn=\storedkey{expressedIn},
         skew=\storedkey{skew}
@@ -591,8 +612,8 @@
 
 % Helper functions
 % Fundamental question: don't these defy the purpose?
-\newkeycommand\disp[expressedIn,index][2]{\edef\mytemp{\commandkey{expressedIn}}\edef\mytempp{\commandkey{index}}\expandafter\Displacement[start=#1,end=#2,expressedIn=\mytemp,index=\mytempp]}
-\newkeycommand{\ev}[expressedIn,index][2]{\edef\temp{\commandkey{expressedIn}}\edef\tempp{\commandkey{index}}\UnitVector[axis=#1,frame=#2,expressedIn=\temp,index=\tempp]}
+\newkeycommand\disp[expressedIn,index][2]{\edefprotect\mytemp{\commandkey{expressedIn}}\edef\mytempp{\commandkey{index}}\expandafter\Displacement[start=#1,end=#2,expressedIn=\mytemp,index=\mytempp]}
+\newkeycommand{\ev}[expressedIn,index][2]{\edefprotect\temp{\commandkey{expressedIn}}\edef\tempp{\commandkey{index}}\UnitVector[axis=#1,frame=#2,expressedIn=\temp,index=\tempp]}
 \newcommand{\trans}[2]{\Transformation[frame=#1,wrt=#2,expressedIn=#2]}
 
 
