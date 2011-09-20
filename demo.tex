@@ -81,7 +81,7 @@ Unit vectors get a special treatment.
 
 \section{Styles}
 
-\begin{SideBySideExample}[xrightmargin=2cm,frame=single]
+\begin{SideBySideExample}[xrightmargin=1.2cm,frame=single]
   {
     \let\vectorformatter\VECTORPRETTYDEFAULT
     \AngularImpulse[object=1,wrt=0,around=3,expressedIn=4]
@@ -94,14 +94,15 @@ Unit vectors get a special treatment.
 
 \subsection{Transformation matrices}
 
-\begin{SideBySideExample}
+\begin{SideBySideExample}[xrightmargin=1cm,frame=single]
   \Transformation[frame=2,wrt=0,expressedIn=0]
+  \Transformation[frame=2,wrt=0,expressedIn=1]
 \end{SideBySideExample}
 
 \subsection{Content of incdices}
 
 Apart from plain text, the indices can also contain macro's.
-\begin{SideBySideExample}[xrightmargin=2cm,frame=single]
+\begin{SideBySideExample}[xrightmargin=1cm,frame=single]
   \def\foo{0}
   \AngularImpulse[wrt=\foo]
   \newcommand{\frm}[1]{{\{#1\}}}

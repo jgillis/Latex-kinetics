@@ -6,6 +6,7 @@
 \usepackage{ifthen}  % try to remove dependency 
 \usepackage{etoolbox}
 \usepackage{xstring}
+\usepackage{ulem}
 \usepackage{keycommand}[2010/04/27] % requires a recent version. v3.1415 (2010/04/27)
 
 %% === Symbols and names ==
@@ -140,11 +141,11 @@
 }
 
 % counting starts at zero
-% \listindex{1}{\mylist} gives the scond element
+% \listindex{1}{\mylist} gives the second element
 % lookup time is linear
 \newcommand{\listindex}[2]{
   \let\mylist\undefined%
-  \fromcsv{\mylist}{#1}%
+  \fromcsv{\mylist}{#2}%
   \ifdef{\mylist}{%
     \setcounter{tempcounti}{0}%
     \renewcommand*{\do}[1]{
@@ -153,7 +154,26 @@
       }{}%
       \stepcounter{tempcounti}%
     }%
-    \docsvlist{#2}%
+    \dolistloop{\mylist}%
+   }{}%
+}
+
+% counting starts at zero
+% \listindex{1}{\mylist} gives the scond element
+% lookup time is linear
+\newcommand{\listindexr}[3]{
+  \let\mylist\undefined%
+  \let#1\undefined%
+  \fromcsve{\mylist}{#3}%
+  \ifdef{\mylist}{%
+    \setcounter{tempcounti}{0}%
+    \renewcommand*{\do}[1]{
+       \ifnumequal{\value{tempcounti}}{#2}{%
+	\def#1{##1}%
+      }{}%
+      \stepcounter{tempcounti}%
+    }%
+    \dolistloop{\mylist}%
    }{}%
 }
 
@@ -164,9 +184,9 @@
 \newcommand{\DARROW}[1]{\overset{\leftrightarrow}{#1}}
 \newcommand{\DARROWBOLD}[1]{\overset{\leftrightarrow}{\mathbf{#1}}}
 \newcommand{\BOLD}[1]{\mathbf{#1}}
-\newcommand{\UNDERLINE}[1]{\underline{#1}}
-\newcommand{\DUNDERLINE}[1]{\underset{=}{#1}}
-\newcommand{\DUNDERLINEBOLD}[1]{\underset{=}{\mathbf{#1}}}
+\newcommand{\UNDERLINE}[1]{\uline{#1}}
+\newcommand{\DUNDERLINE}[1]{\uuline{#1}}
+\newcommand{\DUNDERLINEBOLD}[1]{\uuline{\mathbf{#1}}}
 
 \newcommand{\prettydefault}{prettydefault}
 \newcommand{\flatdefault}{flatdefault}
@@ -488,6 +508,12 @@
 \newcommand{\UNITVECTORPRETTYDEFAULT}[2]{
     \storekeys{frame,axis,expressedIn,index,components,diff,id}%
     \def\axis{\storedkey{axis}}%
+    \ifthenelse{\equal{\axis}{x} \or \equal{\axis}{1}}{\let\omitaxis1}{%
+      \ifthenelse{\equal{\axis}{y} \or \equal{\axis}{2}}{\let\omitaxis1}{%
+	\ifthenelse{\equal{\axis}{z} \or \equal{\axis}{3}}{\let\omitaxis1}{}%
+      }%
+    }%
+    \calcomits{frame,axis,expressedIn,index,components,diff,id}
     \def\mysymbol{%
         \ifthenelse{\equal{\axis}{x} \or \equal{\axis}{1}}{\imath}{%
           \ifthenelse{\equal{\axis}{y} \or \equal{\axis}{2}}{\jmath}{%
@@ -498,10 +524,19 @@
     \SymbolMarkupVectorModifier[
         ur=\checkkey{expressedIn},
         ul=\checkkey{frame},
-        lr=\checkkey{index},
+        lr=\noexpand\combine{\checkkey{axis},\checkkey{index}},
         diff=\storedkey{diff},
         expressedIn=\storedkey{expressedIn}
     ]{\VecSymbol{\mysymbol}}%
+}
+
+\newcommand{\UNITDYADPRETTYDEFAULT}[2]{
+    \storekeys{frame,axis,expressedIn,index,components,diff,id}%
+    \listindexr{\axisone}{0}{\storedkey{axis}}%
+    \listindexr{\axistwo}{1}{\storedkey{axis}}%
+    \ifdef{\axistwo}{}{\let\axistwo\axisone}%
+    \UnitVector[frame=\storedkey{frame},axis=\axisone,expressedIn=\storedkey{expressedIn}]%
+    \omitting{frame}{\UnitVector[frame=\storedkey{frame},axis=\axistwo,expressedIn=\storedkey{expressedIn}]}%
 }
 
 \newcommand{\TENSORPRETTYDEFAULT}[2]{%
@@ -534,7 +569,7 @@
 \let\vectorformatter\VECTORPRETTYDEFAULT
 \let\tensorformatter\TENSORPRETTYDEFAULT
 \let\unitvectorformatter\UNITVECTORPRETTYDEFAULT
-
+\let\unitdyadformatter\UNITDYADPRETTYDEFAULT
 
 %% === omitting functionality ==
 \newcommand{\setomitif}[2]{
@@ -637,11 +672,15 @@
  \genericformatter{\unitvectorformatter}{UnitVector}%
 }
 
-\newkeycommand\Transformation[frame,wrt,expressedIn,diff,id]{%
+\newkeycommand\UnitDyad[frame,axis,expressedIn,index,components,diff,id]{%
+ \genericformatter{\unitdyadformatter}{UnitVector}%
+}
+
+\newkeycommand\Transformation[frame,wrt,expressedIn,diff,id,index]{%
   \genericformatter{\tensorformatter}{Transformation}%
 }
 
-\newkeycommand\HomogenousTransformation[frame,wrt,expressedIn,diff,id]{%
+\newkeycommand\HomogenousTransformation[frame,wrt,expressedIn,diff,id,index]{%
   \genericformatter{\tensorformatter}{HomogenousTransformation}%
 }
 
