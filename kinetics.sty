@@ -752,18 +752,10 @@
     -\left(\listindex{1}{#1}\right) & \listindex{0}{#1} & 0 \\%
     \end{pmatrix}_{\checkkey{expressedIn}}%
    }{%
-    \commandkeyblankt{base}{%
-      \renewcommand*{\do}[1]{%
-	##1 \\%
-      }%
-      \begin{pmatrix}%
-      \docsvlist{#1}%
-      \end{pmatrix}_{\checkkey{expressedIn}}%
-    }{%
-      \listindex{0}{#1} \UnitVector[frame=\storedkey{base},axis=1,expressedIn=\storedkey{expressedIn}] +%
-      \listindex{1}{#1} \UnitVector[frame=\storedkey{base},axis=2,expressedIn=\storedkey{expressedIn}] +%
-      \listindex{2}{#1} \UnitVector[frame=\storedkey{base},axis=3,expressedIn=\storedkey{expressedIn}] %
-    }
+    \expandafter\def\expandafter\myelemone{\listindex{0}{#1}}
+    \expandafter\def\expandafter\myelemtwo{\listindex{1}{#1}}
+    \expandafter\def\expandafter\myelemthree{\listindex{2}{#1}}
+    \vectorcomponentsformatter{\myelemone}{\myelemtwo}{\myelemthree}%
    }%
 }
 
@@ -779,6 +771,8 @@
 %  \docsvlist{#1}%
 %  \end{pmatrix}%
 %}
+
+\newcommand*{\dowork}[2]{} %dummy
 
 % defcounter does not seem to be local
 \newcommand{\tensorcomponentsformatter}[9]{%
@@ -802,17 +796,21 @@
     \IfStrEq*{#8}{0}{}{\do}%
     \IfStrEq*{#9}{0}{}{\do}%
     \defcounter{tempcountii}{0}%
-    \newcommand*{\dowork}[2]{%
+    \renewcommand*{\dowork}[2]{%
 \begingroup%
       \IfStrEq*{##2}{1}{%
 	\UnitDyad[frame=\storedkey{base},expressedIn=\storedkey{expressedIn},axis=##1]%
       }{%
-	\UnitDyad[frame=\storedkey{base},expressedIn=\storedkey{expressedIn},axis=##1] ##2 %
+	\UnitDyad[frame=\storedkey{base},expressedIn=\storedkey{expressedIn},axis=##1] \protectifminus{##2} %
       }%
 \endgroup%
       \stepcounter{tempcountii}%
       \ifnumless{\value{tempcountii}}{\value{tempcountNN}}{+}{}%
     }%
+    \ifnumless{\value{tempcountNN}}{1}{%
+      \vec{0}%
+    }{%
+    \left(
     \IfStrEq*{#1}{0}{}{\dowork{{1,1}}{#1}}%
     \IfStrEq*{#2}{0}{}{\dowork{{1,2}}{#2}}%
     \IfStrEq*{#3}{0}{}{\dowork{{1,3}}{#3}}%
@@ -822,6 +820,45 @@
     \IfStrEq*{#7}{0}{}{\dowork{{3,1}}{#7}}%
     \IfStrEq*{#8}{0}{}{\dowork{{3,2}}{#8}}%
     \IfStrEq*{#9}{0}{}{\dowork{{3,3}}{#9}}%
+    \right)
+    }%
+  }%
+}
+
+% defcounter does not seem to be local
+\newcommand{\vectorcomponentsformatter}[3]{%
+ \commandkeyblankt{base}{%
+  \begin{pmatrix}%
+    #1 \\%
+    #2 \\%
+    #3
+   \end{pmatrix}_{\checkkey{expressedIn}}%
+  }{%
+    \let\mystack\undefined%
+    \renewcommand*{\do}{\stepcounter{tempcountNN}}%
+    \defcounter{tempcountNN}{0}%
+    \IfStrEq*{#1}{0}{}{\do}%
+    \IfStrEq*{#2}{0}{}{\do}%
+    \IfStrEq*{#3}{0}{}{\do}%
+    \defcounter{tempcountii}{0}%
+    \renewcommand*{\dowork}[2]{%
+      \IfStrEq*{##2}{1}{%
+	\UnitVector[frame=\storedkey{base},expressedIn=\storedkey{expressedIn},axis=##1]%
+      }{%
+	\UnitVector[frame=\storedkey{base},expressedIn=\storedkey{expressedIn},axis=##1] \protectifminus{##2} %
+      }%
+      \stepcounter{tempcountii}%
+      \ifnumless{\value{tempcountii}}{\value{tempcountNN}}{+}{}%
+    }%
+    \ifnumless{\value{tempcountNN}}{1}{%
+      \vec{0}%
+    }{%
+    \left(%
+      \IfStrEq*{#1}{0}{}{\dowork{1}{#1}}%
+      \IfStrEq*{#2}{0}{}{\dowork{2}{#2}}%
+      \IfStrEq*{#3}{0}{}{\dowork{3}{#3}}%
+    \right)%
+    }%
   }%
 }
 
@@ -831,9 +868,9 @@
   \def\vectorcontext{TensorComponents}%
   \storekeys{expressedIn,diagonal,base}%
   \edefprotect\mydiag{\storedkey{diagonal}}%
-  \expandafter\def\expandafter\myelemone{\listindex{0}{#1}}
-  \expandafter\def\expandafter\myelemtwo{\listindex{1}{#1}}
-  \expandafter\def\expandafter\myelemthree{\listindex{2}{#1}}
+  \expandafter\def\expandafter\myelemone{\listindex{0}{#1}}%
+  \expandafter\def\expandafter\myelemtwo{\listindex{1}{#1}}%
+  \expandafter\def\expandafter\myelemthree{\listindex{2}{#1}}%
   \IfSubStr*{\mydiag}{1}{%
     \tensorcomponentsformatter{\myelemone}{0}{0}%
 			      {0}{\myelemtwo}{0}%
@@ -848,7 +885,11 @@
    }%
 }
 
-\newcommand{\negate}[1]{-#1}
+
+\newcommand{\protectifminus}[1]{\left(#1\right)}
+\newcommand{\smartminus}[1]{-\left(#1\right)}
+\newcommand{\negate}[1]{\smartminus{#1}}
+
 
 \newkeycommand\TransformationPrimitive[type,axis,base,expressedIn,bool inverse=false,bool components=false][1]{
   \def\vectorcontext{TransformationPrimitive}%
