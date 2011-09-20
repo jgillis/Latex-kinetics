@@ -694,9 +694,9 @@
 
 \newcommand{\Htrans}[2]{\HomogenousTransformation[frame=#1,wrt=#2,expressedIn=#2]}
 
-\newkeycommand\VectorComponents[expressedIn,bool skew=false][1]{%
+\newkeycommand\VectorComponents[expressedIn,bool skew=false,base][1]{%
   \def\vectorcontext{VectorComponents}%
-  \storekeys{expressedIn,skew}%
+  \storekeys{expressedIn,skew,base}%
   \edefprotect\myskew{\storedkey{skew}}%
   \IfSubStr*{\myskew}{1}{%
     \begin{pmatrix}%
@@ -705,26 +705,38 @@
     -\left(\listindex{1}{#1}\right) & \listindex{0}{#1} & 0 \\%
     \end{pmatrix}_{\checkkey{expressedIn}}%
    }{%
-    \renewcommand*{\do}[1]{%
-      ##1 \\%
-    }%
-    \begin{pmatrix}%
-    \docsvlist{#1}%
-    \end{pmatrix}_{\checkkey{expressedIn}}%
+    \commandkeyblankt{base}{%
+      \renewcommand*{\do}[1]{%
+	##1 \\%
+      }%
+      \begin{pmatrix}%
+      \docsvlist{#1}%
+      \end{pmatrix}_{\checkkey{expressedIn}}%
+    }{%
+      \listindex{0}{#1} \UnitVector[frame=\storedkey{base},axis=1,expressedIn=\storedkey{expressedIn}] +%
+      \listindex{1}{#1} \UnitVector[frame=\storedkey{base},axis=2,expressedIn=\storedkey{expressedIn}] +%
+      \listindex{2}{#1} \UnitVector[frame=\storedkey{base},axis=3,expressedIn=\storedkey{expressedIn}] %
+    }
    }%
 }
 
 
-\newkeycommand\TensorComponents[expressedIn,bool diagonal=true][1]{%
+\newkeycommand\TensorComponents[expressedIn,bool diagonal=true,base][1]{%
   \def\vectorcontext{TensorComponents}%
-  \storekeys{expressedIn,diagonal}%
+  \storekeys{expressedIn,diagonal,base}%
   \edefprotect\mydiag{\storedkey{diagonal}}%
   \IfSubStr*{\mydiag}{1}{%
-    \begin{pmatrix}%
-    \listindex{0}{#1} & 0 & 0 \\%
-    0 & \listindex{1}{#1} & 0 \\%
-    0 & 0 & \listindex{2}{#1} \\%
-    \end{pmatrix}_{\checkkey{expressedIn}}%
+    \commandkeyblankt{base}{
+      \begin{pmatrix}%
+      \listindex{0}{#1} & 0 & 0 \\%
+      0 & \listindex{1}{#1} & 0 \\%
+      0 & 0 & \listindex{2}{#1} \\%
+      \end{pmatrix}_{\checkkey{expressedIn}}%
+    }{%
+      \listindex{0}{#1} \UnitDyad[frame=\storedkey{base},axis=1,expressedIn=\storedkey{expressedIn}] +%
+      \listindex{1}{#1} \UnitDyad[frame=\storedkey{base},axis=2,expressedIn=\storedkey{expressedIn}] +%
+      \listindex{2}{#1} \UnitDyad[frame=\storedkey{base},axis=3,expressedIn=\storedkey{expressedIn}]%
+    }%
    }{%
     \renewcommand*{\do}[1]{%
       ##1 \\%
@@ -803,6 +815,6 @@
     }%
   }%
 }
-
+%todo: components. Genmatrix?
 
 \endinput
