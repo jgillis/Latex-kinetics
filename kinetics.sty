@@ -69,6 +69,8 @@
 
 \newcounter{tempcountN}
 \newcounter{tempcounti}
+\newcounter{tempcountNN}
+\newcounter{tempcountii}
 
 % A haskell-like function.
 % Splits the list in \init (a list of all elements but the last) and \last.
@@ -76,9 +78,9 @@
 \let\init\undefined%
 \let\last\undefined%
 \ifdef{#1}{%
-  \setcounter{tempcountN}{0}%
+  \defcounter{tempcountN}{0}%
   \listcnt{tempcountN}{#1}%
-  \setcounter{tempcounti}{1}%
+  \defcounter{tempcounti}{1}%
   \renewcommand*{\do}[1]{%
     \ifnumless{\value{tempcounti}}{\value{tempcountN}}{%
       \listadd\init{##1}%
@@ -133,7 +135,7 @@
   \let\mylist\undefined%
   \fromcsve{\mylist}{#1}%
   \ifdef{\mylist}{%
-    \setcounter{tempcountN}{0}%
+    \defcounter{tempcountN}{0}%
     \listcnt{tempcountN}{\mylist}%
     \renewcommand*{\do}[1]{##1}%
     \ifnumless{\value{tempcountN}}{2}{\dolistloop{\mylist}}{\error{Oneorzero assertion failed. More than one non-empty list value was found: #1 (count \number\value{tempcountN})}}%
@@ -144,10 +146,11 @@
 % \listindex{1}{\mylist} gives the second element
 % lookup time is linear
 \newcommand{\listindex}[2]{
+{%
   \let\mylist\undefined%
   \fromcsv{\mylist}{#2}%
   \ifdef{\mylist}{%
-    \setcounter{tempcounti}{0}%
+    \defcounter{tempcounti}{0}%
     \renewcommand*{\do}[1]{
        \ifnumequal{\value{tempcounti}}{#1}{%
 	##1%
@@ -156,6 +159,50 @@
     }%
     \dolistloop{\mylist}%
    }{}%
+}%
+}
+
+% counting starts at zero
+% \listindex{1}{\mylist} gives the second element
+% lookup time is linear
+\newcommand{\listindexe}[2]{
+{%
+  \let\mylist\undefined%
+  \fromcsv{\mylist}{#2}%
+  \def\temp{#2}
+  \show\temp
+  \ifdef{\mylist}{%
+    \show\mylist
+    \defcounter{tempcounti}{0}%
+    \renewcommand*{\do}[1]{
+       \ifnumequal{\value{tempcounti}}{#1}{%
+	##1%
+      }{}%
+      \stepcounter{tempcounti}%
+    }%
+    \dolistloop{\mylist}%
+   }{}%
+}%
+}
+
+% counting starts at zero
+% \listindex{1}{\mylist} gives the second element
+% lookup time is linear
+\newcommand{\listindexx}[2]{
+{%
+  \let\mylist\undefined%
+  \expandafter\fromcsv\expandafter\mylist\expandafter{#2}%
+  \ifdef{\mylist}{%
+    \defcounter{tempcounti}{0}%
+    \renewcommand*{\do}[1]{%
+       \ifnumequal{\value{tempcounti}}{#1}{%
+	##1%
+      }{}%
+      \stepcounter{tempcounti}%
+    }%
+    \dolistloop{\mylist}%
+   }{}%
+}%
 }
 
 % counting starts at zero
@@ -166,7 +213,7 @@
   \let#1\undefined%
   \fromcsve{\mylist}{#3}%
   \ifdef{\mylist}{%
-    \setcounter{tempcounti}{0}%
+    \defcounter{tempcounti}{0}%
     \renewcommand*{\do}[1]{
        \ifnumequal{\value{tempcounti}}{#2}{%
 	\def#1{##1}%
@@ -721,22 +768,76 @@
 }
 
 
+% I give up here: I fail to make the alignement character work as expected.
+%\newcommand{\tensorcomponentsformatter}[1]{%
+%  \renewcommand*{\do}[1]{%
+%      {%%
+%	\join{ & }{##1}%
+%      } \\%
+%  }%
+%  \begin{pmatrix}%
+%  \docsvlist{#1}%
+%  \end{pmatrix}%
+%}
+
+% defcounter does not seem to be local
+\newcommand{\tensorcomponentsformatter}[9]{%
+ \commandkeyblankt{base}{%
+  \begin{pmatrix}%
+    #1 & #2 & #3  \\%
+    #4 & #5 & #6  \\%
+    #7 & #8 & #9 %
+   \end{pmatrix}_{\checkkey{expressedIn}}%
+  }{%
+    \let\mystack\undefined%
+    \renewcommand*{\do}{\stepcounter{tempcountNN}}
+    \defcounter{tempcountNN}{0}%
+    \IfStrEq*{#1}{0}{}{\do}%
+    \IfStrEq*{#2}{0}{}{\do}%
+    \IfStrEq*{#3}{0}{}{\do}%
+    \IfStrEq*{#4}{0}{}{\do}%
+    \IfStrEq*{#5}{0}{}{\do}%
+    \IfStrEq*{#6}{0}{}{\do}%
+    \IfStrEq*{#7}{0}{}{\do}%
+    \IfStrEq*{#8}{0}{}{\do}%
+    \IfStrEq*{#9}{0}{}{\do}%
+    \defcounter{tempcountii}{0}%
+    \newcommand*{\dowork}[2]{%
+\begingroup%
+      \IfStrEq*{##2}{1}{%
+	\UnitDyad[frame=\storedkey{base},expressedIn=\storedkey{expressedIn},axis=##1]%
+      }{%
+	\UnitDyad[frame=\storedkey{base},expressedIn=\storedkey{expressedIn},axis=##1] ##2 %
+      }%
+\endgroup%
+      \stepcounter{tempcountii}%
+      \ifnumless{\value{tempcountii}}{\value{tempcountNN}}{+}{}%
+    }%
+    \IfStrEq*{#1}{0}{}{\dowork{{1,1}}{#1}}%
+    \IfStrEq*{#2}{0}{}{\dowork{{1,2}}{#2}}%
+    \IfStrEq*{#3}{0}{}{\dowork{{1,3}}{#3}}%
+    \IfStrEq*{#4}{0}{}{\dowork{{2,1}}{#4}}%
+    \IfStrEq*{#5}{0}{}{\dowork{{2,2}}{#5}}%
+    \IfStrEq*{#6}{0}{}{\dowork{{2,3}}{#6}}%
+    \IfStrEq*{#7}{0}{}{\dowork{{3,1}}{#7}}%
+    \IfStrEq*{#8}{0}{}{\dowork{{3,2}}{#8}}%
+    \IfStrEq*{#9}{0}{}{\dowork{{3,3}}{#9}}%
+  }%
+}
+
+
+
 \newkeycommand\TensorComponents[expressedIn,bool diagonal=true,base][1]{%
   \def\vectorcontext{TensorComponents}%
   \storekeys{expressedIn,diagonal,base}%
   \edefprotect\mydiag{\storedkey{diagonal}}%
+  \expandafter\def\expandafter\myelemone{\listindex{0}{#1}}
+  \expandafter\def\expandafter\myelemtwo{\listindex{1}{#1}}
+  \expandafter\def\expandafter\myelemthree{\listindex{2}{#1}}
   \IfSubStr*{\mydiag}{1}{%
-    \commandkeyblankt{base}{
-      \begin{pmatrix}%
-      \listindex{0}{#1} & 0 & 0 \\%
-      0 & \listindex{1}{#1} & 0 \\%
-      0 & 0 & \listindex{2}{#1} \\%
-      \end{pmatrix}_{\checkkey{expressedIn}}%
-    }{%
-      \listindex{0}{#1} \UnitDyad[frame=\storedkey{base},axis=1,expressedIn=\storedkey{expressedIn}] +%
-      \listindex{1}{#1} \UnitDyad[frame=\storedkey{base},axis=2,expressedIn=\storedkey{expressedIn}] +%
-      \listindex{2}{#1} \UnitDyad[frame=\storedkey{base},axis=3,expressedIn=\storedkey{expressedIn}]%
-    }%
+    \tensorcomponentsformatter{\myelemone}{0}{0}%
+			      {0}{\myelemtwo}{0}%
+			      {0}{0}{\myelemthree}%
    }{%
     \renewcommand*{\do}[1]{%
       ##1 \\%
@@ -746,6 +847,66 @@
     \end{pmatrix}_{\checkkey{expressedIn}}%
    }%
 }
+
+\newcommand{\negate}[1]{-#1}
+
+\newkeycommand\TransformationPrimitive[type,axis,base,expressedIn,bool inverse=false,bool components=false][1]{
+  \def\vectorcontext{TransformationPrimitive}%
+  \storekeys{type,axis,components,base,expressedIn,inverse}%
+  \edefprotect\mycomponents{\storedkey{components}}%
+  \edefprotect\myinverse{\storedkey{inverse}}%
+  \IfSubStr*{\myinverse}{1}{%
+      \let\normalpos\negate%
+      \let\normalneg\identity%
+  }{%
+      \let\normalpos\identity%
+      \let\normalneg\negate%
+  }%
+  \edefprotect\myaxis{\storedkey{axis}}%
+  \edefprotect\mytype{\storedkey{type}}%
+  \IfSubStr*{\mycomponents}{1}{%
+    \IfStrEqCase*{\mytype}{%
+      {R}{%
+	\def\ca{\cos\left(#1\right)}%
+	\def\sa{\sin\left(#1\right)}%
+	\IfStrEqCase*{\myaxis}{%
+	  {x}{%
+	    \tensorcomponentsformatter{1}{0}{0}%
+				{0}{\ca}{\normalpos{\sa}}%
+				{0}{\normalneg{\sa}}{\ca}%
+	  }%
+	  {y}{%
+	    \tensorcomponentsformatter{\ca}{0}{\normalpos{\sa}}%
+				      {0}{1}{0}%
+				      {\normalneg{\sa}}{0}{\ca}%
+	  }%
+	  {z}{
+	    \tensorcomponentsformatter{\ca}{\normalneg{\sa}}{0}%
+				      {\normalpos{\sa}}{\ca}{0}%
+				      {0}{0}{1}%
+	  }%
+	}%
+      }%
+    }%
+  }{%
+    \IfStrEqCase*{\mytype}{%
+      {R}{%
+	\IfStrEqCase*{\myaxis}{%
+	  {x}{%
+	    \Rx(\normalpos{#1})%
+	  }%
+	  {y}{%
+	    \Ry(\normalpos{#1})%
+	  }%
+	  {z}{
+	    \Rz(\normalpos{#1}Z)%
+	  }%
+	}%
+      }%
+    }%
+  }%
+}
+%todo: components. Genmatrix?
 
 \newkeycommand\HomogenousTransformationPrimitive[type,axis,bool components=false][1]{
   \def\vectorcontext{HomogenousTransformationPrimitive}%

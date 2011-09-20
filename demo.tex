@@ -343,4 +343,32 @@ $
   b
 \fi
 $
+
+\begin{equation}
+%\fromcsve{\mylist}{\AngularImpulse[expressedIn=3,object=4,id=8],b,c}
+%\def\foo{\AngularImpulse[expressedIn=3,object=4,id=8]}
+%\def\bar{\f}
+%\tensorcomponentsformatter{a,b,c}
+%\tensorcomponentsformatter{{a,{\foo},b},{,d,e},{f,g,h}}
+%\tensorcomponentsformatter{{\AngularImpulse[expressedIn=3,object=4],b,a},{c,d,e},{f,g,h}}
+\end{equation}
+
+\begin{equation}
+\TensorComponents[expressedIn=3,diagonal=true]{A,A,B}
+\end{equation}
+
+\begin{equation}
+\TensorComponents[diagonal=true,base=3]{A,A,B}
+\end{equation}
+
+\begin{equation}
+\renewcommand*{\do}[1]{
+    {
+      \join{-}{#1}
+    } \\
+}
+\docsvlist{{a,b,c},{d,e,f}}
+\end{equation}
+
+
 \end{document}
