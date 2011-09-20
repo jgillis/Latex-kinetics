@@ -139,6 +139,23 @@
   }{}%
 }
 
+% counting starts at zero
+% \listindex{1}{\mylist} gives the scond element
+% lookup time is linear
+\newcommand{\listindex}[2]{
+  \let\mylist\undefined%
+  \fromcsv{\mylist}{#1}%
+  \ifdef{\mylist}{%
+    \setcounter{tempcounti}{0}%
+    \renewcommand*{\do}[1]{
+       \ifnumequal{\value{tempcounti}}{#1}{%
+	##1%
+      }{}%
+      \stepcounter{tempcounti}%
+    }%
+    \docsvlist{#2}%
+   }{}%
+}
 
 \newcommand{\ifkey}[3]{\ifthenelse{\equal{\commandkey{#1}}{}}{#3}{#2}}
 \newcommand{\haskey}[1]{\not \equal{\commandkey{#1}}{}}
@@ -256,8 +273,13 @@
 
 % 
 \newcommand{\omitlogicexpressedIn}[1]{%
- \IfStrEq*{\vectorcontext}{Transformation}{%
-  \ifthenelse{\equal{\storedkey{expressedIn}}{\storedkey{wrt}}}{\let\result1}{}%
+ \ifdef{\vectorcontext}{%
+  \IfStrEq*{\vectorcontext}{Transformation}{%
+    \ifthenelse{\equal{\storedkey{expressedIn}}{\storedkey{wrt}}}{\let\result1}{}%
+  }{}%
+  \IfStrEq*{\vectorcontext}{HomogenousTransformation}{%
+    \ifthenelse{\equal{\storedkey{expressedIn}}{\storedkey{wrt}}}{\let\result1}{}%
+  }{}%
  }{}%
 }
 
@@ -467,8 +489,8 @@
     \storekeys{frame,axis,expressedIn,index,components,diff,id}%
     \def\axis{\storedkey{axis}}%
     \def\mysymbol{%
-        \ifthenelse{\equal{\axis}{x} \or \equal{\axis}{1}}{i}{%
-          \ifthenelse{\equal{\axis}{y} \or \equal{\axis}{2}}{j}{%
+        \ifthenelse{\equal{\axis}{x} \or \equal{\axis}{1}}{\imath}{%
+          \ifthenelse{\equal{\axis}{y} \or \equal{\axis}{2}}{\jmath}{%
             \ifthenelse{\equal{\axis}{z} \or \equal{\axis}{3}}{k}{#1}%
           }%
         }%
@@ -567,60 +589,60 @@
 }
 
 \newkeycommand\AngularImpulse[around,object,wrt,expressedIn,diff,components,id]{%
-  \genericformatter{\vectorformatter}{AngularImpulse}
+  \genericformatter{\vectorformatter}{AngularImpulse}%
 }
 
 \newkeycommand\Torque[around,on,from,expressedIn,diff,components,id]{%
-  \genericformatter{\vectorformatter}{Torque}
+  \genericformatter{\vectorformatter}{Torque}%
 }
 
 \newkeycommand\Force[on,from,at,expressedIn,diff,components,id]{%
-  \genericformatter{\vectorformatter}{Force}
+  \genericformatter{\vectorformatter}{Force}%
 }
 
 \newkeycommand\Displacement[start,end,expressedIn,index,diff,components,id]{%
-  \genericformatter{\vectorformatter}{Displacement}
+  \genericformatter{\vectorformatter}{Displacement}%
 }
 
 \newkeycommand\AngularVelocity[object,wrt,expressedIn,index,diff,components,id,bool skew=false]{%
-  \genericformatter{\vectorformatter}{AngularVelocity}
+  \genericformatter{\vectorformatter}{AngularVelocity}%
 }
 
 \newkeycommand\AngularAcceleration[object,wrt,expressedIn,index,diff,components,id]{%
-  \genericformatter{\vectorformatter}{AngularAcceleration}
+  \genericformatter{\vectorformatter}{AngularAcceleration}%
 }
 
 \newkeycommand\Velocity[object,wrt,expressedIn,index,diff,components,id]{%
-  \genericformatter{\vectorformatter}{Velocity}
+  \genericformatter{\vectorformatter}{Velocity}%
 }
 
 \newkeycommand\Impulse[object,wrt,expressedIn,index,diff,components,id]{%
-  \genericformatter{\vectorformatter}{Impulse}
+  \genericformatter{\vectorformatter}{Impulse}%
 }
 
 \newkeycommand\Acceleration[object,wrt,expressedIn,index,diff,components,id]{%
-  \genericformatter{\vectorformatter}{Acceleration}
+  \genericformatter{\vectorformatter}{Acceleration}%
 }
 
 
 \newkeycommand\InertiaTensor[object,around,expressedIn,index,diff,id]{%
-  \genericformatter{\tensorformatter}{InertiaTensor}
+  \genericformatter{\tensorformatter}{InertiaTensor}%
 }
 
 \newkeycommand\GenericVector[object,wrt,expressedIn,index,diff,components,id,bool skew=false]{%
-  \genericformatter{\vectorformatter}{GenericVector}
+  \genericformatter{\vectorformatter}{GenericVector}%
 }
 
 \newkeycommand\UnitVector[frame,axis,expressedIn,index,components,diff,id]{%
- \genericformatter{\unitvectorformatter}{UnitVector}
+ \genericformatter{\unitvectorformatter}{UnitVector}%
 }
 
 \newkeycommand\Transformation[frame,wrt,expressedIn,diff,id]{%
-  \genericformatter{\tensorformatter}{Transformation}
+  \genericformatter{\tensorformatter}{Transformation}%
 }
 
-\newkeycommand\HomogenousTransformation[frame,wrt,expressedIn,diff,id,bool homogenous=true]{%
-  \genericformatter{\tensorformatter}{HomogenousTransformation}
+\newkeycommand\HomogenousTransformation[frame,wrt,expressedIn,diff,id]{%
+  \genericformatter{\tensorformatter}{HomogenousTransformation}%
 }
 
 
@@ -633,17 +655,115 @@
 
 \newcommand{\Htrans}[2]{\HomogenousTransformation[frame=#1,wrt=#2,expressedIn=#2]}
 
-\newkeycommand\VectorComponents[expressedIn][1]{%
-  \storekeys{expressedIn}%
-  \renewcommand*{\do}[1]{%
-    ##1 \\%
-  }%
-  \begin{pmatrix}%
-  \docsvlist{#1}%
-  \end{pmatrix}_\checkkey{expressedIn}%
+\newkeycommand\VectorComponents[expressedIn,bool skew=false][1]{%
+  \def\vectorcontext{VectorComponents}%
+  \storekeys{expressedIn,skew}%
+  \edefprotect\myskew{\storedkey{skew}}%
+  \IfSubStr*{\myskew}{1}{%
+    \begin{pmatrix}%
+    0 & -\left(\listindex{2}{#1}\right) & \listindex{1}{#1} \\%
+    \listindex{2}{#1} & 0 & -\left(\listindex{0}{#1}\right) \\%
+    -\left(\listindex{1}{#1}\right) & \listindex{0}{#1} & 0 \\%
+    \end{pmatrix}_{\checkkey{expressedIn}}%
+   }{%
+    \renewcommand*{\do}[1]{%
+      ##1 \\%
+    }%
+    \begin{pmatrix}%
+    \docsvlist{#1}%
+    \end{pmatrix}_{\checkkey{expressedIn}}%
+   }%
 }
 
 
+\newkeycommand\TensorComponents[expressedIn,bool diagonal=true][1]{%
+  \def\vectorcontext{TensorComponents}%
+  \storekeys{expressedIn,diagonal}%
+  \edefprotect\mydiag{\storedkey{diagonal}}%
+  \IfSubStr*{\mydiag}{1}{%
+    \begin{pmatrix}%
+    \listindex{0}{#1} & 0 & 0 \\%
+    0 & \listindex{1}{#1} & 0 \\%
+    0 & 0 & \listindex{2}{#1} \\%
+    \end{pmatrix}_{\checkkey{expressedIn}}%
+   }{%
+    \renewcommand*{\do}[1]{%
+      ##1 \\%
+    }%
+    \begin{pmatrix}%
+    \docsvlist{#1}%
+    \end{pmatrix}_{\checkkey{expressedIn}}%
+   }%
+}
+
+\newkeycommand\HomogenousTransformationPrimitive[type,axis,bool components=false][1]{
+  \def\vectorcontext{HomogenousTransformationPrimitive}%
+  \storekeys{type,axis,components}%
+  \edefprotect\mycomponents{\storedkey{components}}%
+  \edefprotect\myaxis{\storedkey{axis}}%
+  \edefprotect\mytype{\storedkey{type}}%
+  \IfSubStr*{\mycomponents}{1}{%
+    \IfStrEqCase*{\mytype}{%
+      {R}{%
+	\def\ca{\cos\left(#1\right)}%
+	\def\sa{\sin\left(#1\right)}%
+	\IfStrEqCase*{\myaxis}{%
+	  {x}{%
+	    \begin{pmatrix}%
+	    1 & 0 & 0 & 0\\%
+	    0 & \ca & -\sa & 0 \\%
+	    0 & \sa & \ca  & 0 \\%
+	    0 & 0 & 0 & 1 \\%
+	    \end{pmatrix}%
+	  }%
+	  {y}{%
+	    \begin{pmatrix}%
+	    \ca & 0 & \sa & 0\\%
+	    0 & 1 & 0 & 0 \\%
+	    -\sa & 0 & \ca & 0 \\%
+	    0 & 0 & 0 & 1 \\%
+	    \end{pmatrix}%
+	  }%
+	  {z}{
+	    \begin{pmatrix}%
+	    \ca & -\sa & 0 &0\\%
+	    \sa & \ca & 0 & 0 \\%
+	    0 & 0 & 1 & 0 \\%
+	    0 & 0 & 0 & 1 \\%
+	    \end{pmatrix}%
+	  }%
+	}%
+      }%
+      {tr}{%
+	\begin{pmatrix}%
+	0 & 0 & 0 & \listindex{0}{#1}\\%
+	0 & 0 & 0 & \listindex{1}{#1} \\%
+	0 & 0 & 1 & \listindex{2}{#1} \\%
+	0 & 0 & 0 & 1 \\%
+	\end{pmatrix}%
+      }%
+    }%
+  }{%
+    \IfStrEqCase*{\mytype}{%
+      {R}{%
+	\IfStrEqCase*{\myaxis}{%
+	  {x}{%
+	    \TRx(#1)%
+	  }%
+	  {y}{%
+	    \TRy(#1)%
+	  }%
+	  {z}{
+	    \TRz(#1)%
+	  }%
+	}%
+      }%
+      {tr}{%
+	\Tr(#1)%
+      }%
+    }%
+  }%
+}
 
 
 \endinput
