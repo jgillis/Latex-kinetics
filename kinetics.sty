@@ -229,11 +229,13 @@
 
 \newcommand{\ARROW}[1]{\vec{#1}}
 \newcommand{\DARROW}[1]{\overset{\leftrightarrow}{#1}}
-\newcommand{\DARROWBOLD}[1]{\overset{\leftrightarrow}{\mathbf{#1}}}
 \newcommand{\BOLD}[1]{\mathbf{#1}}
 \newcommand{\UNDERLINE}[1]{\uline{#1}}
+\newcommand{\DARROWBOLD}[1]{\DARROW{\BOLD{#1}}}
+\newcommand{\ARROWBOLD}[1]{\ARROW{\BOLD{#1}}}
+\newcommand{\UNDERLINEBOLD}[1]{\uline{\BOLD{#1}}}
 \newcommand{\DUNDERLINE}[1]{\uuline{#1}}
-\newcommand{\DUNDERLINEBOLD}[1]{\uuline{\mathbf{#1}}}
+\newcommand{\DUNDERLINEBOLD}[1]{\uuline{\BOLD{#1}}}
 
 \newcommand{\prettydefault}{prettydefault}
 \newcommand{\flatdefault}{flatdefault}
