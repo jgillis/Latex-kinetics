@@ -44,7 +44,7 @@
 
 %% === Helper functions: List processing tools ====
 
-
+\newcommand{\contract}{:}
 
 % Converts its second argument into a list structure
 % usage: \fromcsv{\mylist}{foo,bar,baz}
@@ -376,6 +376,8 @@
  }{\let\result1}%
 }
 
+\newcommand{\transpose}[1]{\left(#1\right)^T}
+\newcommand{\inverse}[1]{\left(#1\right)^{-1}}
 
 \newcommand{\checkkey}[1]{%
   \ifcsdef{shouldomit#1}{}{\storedkey{#1}}%
@@ -441,6 +443,7 @@
 }
 
 \newcommand{\identity}[1]{#1}
+\newcommand{\devnull}[1]{}
 
 % How vector notation is represented:    
 %
