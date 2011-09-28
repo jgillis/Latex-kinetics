@@ -560,7 +560,7 @@
     \def\axis{\storedkey{axis}}%
     \ifthenelse{\equal{\axis}{x} \or \equal{\axis}{1}}{\let\omitaxis1}{%
       \ifthenelse{\equal{\axis}{y} \or \equal{\axis}{2}}{\let\omitaxis1}{%
-	\ifthenelse{\equal{\axis}{z} \or \equal{\axis}{3}}{\let\omitaxis1}{}%
+	\ifthenelse{\equal{\axis}{z} \or \equal{\axis}{3}}{\let\omitaxis1}{\let\omitaxis\undefined}%
       }%
     }%
     \calcomits{frame,axis,expressedIn,index,components,diff,id}
