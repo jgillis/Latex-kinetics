@@ -39,7 +39,8 @@
 \newcommand{\HomogenousTransformationName}{T}
 \newcommand{\GenericVectorSymbol}{v}
 \newcommand{\GenericVectorName}{v}
-
+\newcommand{\GenericTensorSymbol}{\tau}
+\newcommand{\GenericTensorName}{tau}
 
 %% === Helper functions: List processing tools ====
 
@@ -584,8 +585,13 @@
     \listindexr{\axisone}{0}{\storedkey{axis}}%
     \listindexr{\axistwo}{1}{\storedkey{axis}}%
     \ifdef{\axistwo}{}{\let\axistwo\axisone}%
-    \UnitVector[frame=\storedkey{frame},axis=\axisone,expressedIn=\storedkey{expressedIn}]%
-    \omitting{frame}{\UnitVector[frame=\storedkey{frame},axis=\axistwo,expressedIn=\storedkey{expressedIn}]}%
+    \commandkeyblankt{expressedIn}{%
+      \omitting{expressedIn}{\UnitVector[frame=\storedkey{frame},axis=\axisone]}%
+      \omitting{frame}{\UnitVector[frame=\storedkey{frame},axis=\axistwo]}%
+    }{%
+      \UnitVector[frame=\storedkey{frame},axis=\axisone,expressedIn=\storedkey{expressedIn}].%
+      \transpose{\UnitVector[frame=\storedkey{frame},axis=\axistwo,expressedIn=\storedkey{expressedIn}]}%
+    }%
 }
 
 \newcommand{\TENSORPRETTYDEFAULT}[2]{%
@@ -716,6 +722,11 @@
 \newkeycommand\GenericVector[object,wrt,expressedIn,index,diff,components,id,bool skew=false]{%
   \genericformatter{\vectorformatter}{GenericVector}%
 }
+
+\newkeycommand\GenericTensor[object,wrt,expressedIn,index,diff,components,id]{%
+  \genericformatter{\tensorformatter}{GenericTensor}%
+}
+
 
 \newkeycommand\UnitVector[frame,axis,expressedIn,index,components,diff,id]{%
  \genericformatter{\unitvectorformatter}{UnitVector}%
@@ -866,7 +877,7 @@
 
 
 
-\newkeycommand\TensorComponents[expressedIn,bool diagonal=true,base][1]{%
+\newkeycommand\TensorComponents[expressedIn,bool diagonal=false,base][1]{%
   \def\vectorcontext{TensorComponents}%
   \storekeys{expressedIn,diagonal,base}%
   \edefprotect\mydiag{\storedkey{diagonal}}%
@@ -878,12 +889,18 @@
 			      {0}{\myelemtwo}{0}%
 			      {0}{0}{\myelemthree}%
    }{%
-    \renewcommand*{\do}[1]{%
-      ##1 \\%
-    }%
-    \begin{pmatrix}%
-    \docsvlist{#1}%
-    \end{pmatrix}_{\checkkey{expressedIn}}%
+    \expandafter\def\expandafter\myelema{\listindex{0}{#1}}%
+    \expandafter\def\expandafter\myelemb{\listindex{1}{#1}}%
+    \expandafter\def\expandafter\myelemc{\listindex{2}{#1}}%
+    \expandafter\def\expandafter\myelemd{\listindex{3}{#1}}%
+    \expandafter\def\expandafter\myeleme{\listindex{4}{#1}}%
+    \expandafter\def\expandafter\myelemf{\listindex{5}{#1}}%
+    \expandafter\def\expandafter\myelemg{\listindex{6}{#1}}%
+    \expandafter\def\expandafter\myelemh{\listindex{7}{#1}}%
+    \expandafter\def\expandafter\myelemi{\listindex{8}{#1}}%
+    \tensorcomponentsformatter{\myelema}{\myelemb}{\myelemc}%
+			      {\myelemd}{\myeleme}{\myelemf}%
+			      {\myelemg}{\myelemh}{\myelemi}%
    }%
 }
 
