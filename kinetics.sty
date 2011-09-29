@@ -1041,4 +1041,14 @@
 }
 %todo: components. Genmatrix?
 
+
+\makeatletter
+\newcommand\abbreviate[2]{%
+  \csdef{abbreviation-#1}{#2}%
+}
+\newcommand\xab[1]{%
+  \csuse{abbreviation-#1}%
+}
+\makeatother
+
 \endinput
