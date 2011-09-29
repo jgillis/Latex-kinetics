@@ -379,5 +379,22 @@ $
 \docsvlist{{a,b,c},{d,e,f}}
 \end{equation}
 
+\section{Components}
+\begin{tabular}{r|l}
+$\VectorComponents[base=1]{a,b,c}$ & \verb+\VectorComponents[base=1]{a,b,c}+ \\
+$\VectorComponents[base=1]{a,0,c}$ & \verb+\VectorComponents[base=1]{a,0,c}+ \\
+$\VectorComponents[base=1]{0,b,0}$ & \verb+\VectorComponents[base=1]{0,b,0}+ \\
+$\VectorComponents[base=1]{0,0,0}$ & \verb+\VectorComponents[base=1]{0,0,0}+ \\
+$\VectorComponents[expressedIn=1]{a,b,c}$ & \verb+\VectorComponents[expressedIn=1]{a,b,c}+ \\
+$\VectorComponents[expressedIn=1]{a,0,c}$ & \verb+\VectorComponents[expressedIn=1]{a,0,c}+ \\
+$\VectorComponents[expressedIn=1]{0,b,0}$ & \verb+\VectorComponents[expressedIn=1]{0,b,0}+ \\
+$\VectorComponents[expressedIn=1]{0,0,0}$ & \verb+\VectorComponents[expressedIn=1]{0,0,0}+ \\
+\end{tabular}
+
+\begin{equation}
+ \def\foobarbaz{\Displacement[end=b,start=a,expressedIn=d]}
+ \VectorComponents[base=1]{\foobarbaz,bar,0}
+\end{equation}
+
 
 \end{document}
