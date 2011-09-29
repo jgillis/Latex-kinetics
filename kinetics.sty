@@ -146,13 +146,13 @@
 % counting starts at zero
 % \listindex{1}{\mylist} gives the second element
 % lookup time is linear
-\newcommand{\listindex}[2]{
+\newcommand{\listindex}[2]{%
 {%
   \let\mylist\undefined%
   \fromcsv{\mylist}{#2}%
   \ifdef{\mylist}{%
     \defcounter{tempcounti}{0}%
-    \renewcommand*{\do}[1]{
+    \renewcommand*{\do}[1]{%
        \ifnumequal{\value{tempcounti}}{#1}{%
 	##1%
       }{}%
@@ -166,16 +166,15 @@
 % counting starts at zero
 % \listindex{1}{\mylist} gives the second element
 % lookup time is linear
-\newcommand{\listindexe}[2]{
+\newcommand{\listindexe}[2]{%
 {%
   \let\mylist\undefined%
   \fromcsv{\mylist}{#2}%
   \def\temp{#2}
   \show\temp
   \ifdef{\mylist}{%
-    \show\mylist
     \defcounter{tempcounti}{0}%
-    \renewcommand*{\do}[1]{
+    \renewcommand*{\do}[1]{%
        \ifnumequal{\value{tempcounti}}{#1}{%
 	##1%
       }{}%
@@ -207,9 +206,25 @@
 }
 
 % counting starts at zero
-% \listindex{1}{\mylist} gives the scond element
+% \listindex{\myret}{1}{\mylist} gives the scond element
 % lookup time is linear
-\newcommand{\listindexr}[3]{
+\newcommand{\listindexr}[3]{%
+  \let\mylist\undefined%
+  \let#1\undefined%
+  \fromcsv{\mylist}{#3}%
+  \ifdef{\mylist}{%
+    \defcounter{tempcounti}{0}%
+    \renewcommand*{\do}[1]{
+       \ifnumequal{\value{tempcounti}}{#2}{%
+	\def#1{##1}%
+      }{}%
+      \stepcounter{tempcounti}%
+    }%
+    \dolistloop{\mylist}%
+   }{}%
+}
+
+\newcommand{\listindexer}[3]{%
   \let\mylist\undefined%
   \let#1\undefined%
   \fromcsve{\mylist}{#3}%
@@ -224,6 +239,7 @@
     \dolistloop{\mylist}%
    }{}%
 }
+
 
 \newcommand{\ifkey}[3]{\ifthenelse{\equal{\commandkey{#1}}{}}{#3}{#2}}
 \newcommand{\haskey}[1]{\not \equal{\commandkey{#1}}{}}
@@ -585,8 +601,8 @@
 
 \newcommand{\UNITDYADPRETTYDEFAULT}[2]{
     \storekeys{frame,axis,expressedIn,index,components,diff,id}%
-    \listindexr{\axisone}{0}{\storedkey{axis}}%
-    \listindexr{\axistwo}{1}{\storedkey{axis}}%
+    \listindexer{\axisone}{0}{\storedkey{axis}}%
+    \listindexer{\axistwo}{1}{\storedkey{axis}}%
     \ifdef{\axistwo}{}{\let\axistwo\axisone}%
     \commandkeyblankt{expressedIn}{%
       \omitting{expressedIn}{\UnitVector[frame=\storedkey{frame},axis=\axisone]}%
@@ -768,9 +784,9 @@
     -\left(\listindex{1}{#1}\right) & \listindex{0}{#1} & 0 \\%
     \end{pmatrix}_{\checkkey{expressedIn}}%
    }{%
-    \expandafter\def\expandafter\myelemone{\listindex{0}{#1}}
-    \expandafter\def\expandafter\myelemtwo{\listindex{1}{#1}}
-    \expandafter\def\expandafter\myelemthree{\listindex{2}{#1}}
+    \listindexr{\myelemone}{0}{#1}%
+    \listindexr{\myelemtwo}{1}{#1}%
+    \listindexr{\myelemthree}{2}{#1}%
     \vectorcomponentsformatter{\myelemone}{\myelemtwo}{\myelemthree}%
    }%
 }
@@ -826,7 +842,9 @@
     \ifnumless{\value{tempcountNN}}{1}{%
       \vec{0}%
     }{%
-    \left(
+    \ifnumless{\value{tempcountNN}}{2}{}{%
+      \left(%
+    }%
     \IfStrEq*{#1}{0}{}{\dowork{{1,1}}{#1}}%
     \IfStrEq*{#2}{0}{}{\dowork{{1,2}}{#2}}%
     \IfStrEq*{#3}{0}{}{\dowork{{1,3}}{#3}}%
@@ -836,7 +854,9 @@
     \IfStrEq*{#7}{0}{}{\dowork{{3,1}}{#7}}%
     \IfStrEq*{#8}{0}{}{\dowork{{3,2}}{#8}}%
     \IfStrEq*{#9}{0}{}{\dowork{{3,3}}{#9}}%
-    \right)
+    \ifnumless{\value{tempcountNN}}{2}{}{%
+      \right)%
+    }%
     }%
   }%
 }
@@ -869,11 +889,15 @@
     \ifnumless{\value{tempcountNN}}{1}{%
       \vec{0}%
     }{%
-    \left(%
+      \ifnumless{\value{tempcountNN}}{2}{}{%
+	\left(%
+      }%
       \IfStrEq*{#1}{0}{}{\dowork{1}{#1}}%
       \IfStrEq*{#2}{0}{}{\dowork{2}{#2}}%
       \IfStrEq*{#3}{0}{}{\dowork{3}{#3}}%
-    \right)%
+      \ifnumless{\value{tempcountNN}}{2}{}{%
+	\right)%
+      }%
     }%
   }%
 }
@@ -892,15 +916,15 @@
 			      {0}{\myelemtwo}{0}%
 			      {0}{0}{\myelemthree}%
    }{%
-    \expandafter\def\expandafter\myelema{\listindex{0}{#1}}%
-    \expandafter\def\expandafter\myelemb{\listindex{1}{#1}}%
-    \expandafter\def\expandafter\myelemc{\listindex{2}{#1}}%
-    \expandafter\def\expandafter\myelemd{\listindex{3}{#1}}%
-    \expandafter\def\expandafter\myeleme{\listindex{4}{#1}}%
-    \expandafter\def\expandafter\myelemf{\listindex{5}{#1}}%
-    \expandafter\def\expandafter\myelemg{\listindex{6}{#1}}%
-    \expandafter\def\expandafter\myelemh{\listindex{7}{#1}}%
-    \expandafter\def\expandafter\myelemi{\listindex{8}{#1}}%
+    \listindexr{\myelema}{0}{#1}%
+    \listindexr{\myelemb}{1}{#1}%
+    \listindexr{\myelemc}{2}{#1}%
+    \listindexr{\myelemd}{3}{#1}%
+    \listindexr{\myeleme}{4}{#1}%
+    \listindexr{\myelemf}{5}{#1}%
+    \listindexr{\myelemg}{6}{#1}%
+    \listindexr{\myelemh}{7}{#1}%
+    \listindexr{\myelemi}{8}{#1}%
     \tensorcomponentsformatter{\myelema}{\myelemb}{\myelemc}%
 			      {\myelemd}{\myeleme}{\myelemf}%
 			      {\myelemg}{\myelemh}{\myelemi}%
