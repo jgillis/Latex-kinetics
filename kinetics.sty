@@ -359,15 +359,26 @@
 
 % 
 \newcommand{\omitlogicexpressedIn}[1]{%
- \ifdef{\vectorcontext}{%
-  \IfStrEq*{\vectorcontext}{Transformation}{%
-    \ifthenelse{\equal{\storedkey{expressedIn}}{\storedkey{wrt}}}{\let\result1}{}%
-  }{}%
-  \IfStrEq*{\vectorcontext}{HomogenousTransformation}{%
-    \ifthenelse{\equal{\storedkey{expressedIn}}{\storedkey{wrt}}}{\let\result1}{}%
-  }{}%
- }{}%
+ %\ifdef{\vectorcontext}{%
+  %%\IfStrEq*{\vectorcontext}{Transformation}{%
+  %%  \ifthenelse{\equal{\storedkey{expressedIn}}{\storedkey{wrt}}}{\let\result1}{}%
+  %}{}%
+  %\IfStrEq*{\vectorcontext}{HomogenousTransformation}{%
+  %  \ifthenelse{\equal{\storedkey{expressedIn}}{\storedkey{wrt}}}{\let\result1}{}%
+  %}{}%
+  %\IfStrEq*{\vectorcontext}{UnitVector}{%
+  %  \ifthenelse{\equal{\storedkey{expressedIn}}{\storedkey{frame}}}{\let\result1}{}%
+  %}{}%
+ %}{}%
 }
+
+%\newcommand{\omitlogicframe}[1]{%
+% \ifdef{\vectorcontext}{%
+%  \IfStrEq*{\vectorcontext}{UnitVector}{%
+%    \ifthenelse{\equal{\storedkey{expressedIn}}{\storedkey{frame}}}{\let\result1}{}%
+%  }{}%
+% }{}%
+%}
 
 % result is returned as \result
 % \undefined -> don't omit
@@ -936,6 +947,9 @@
 \newcommand{\smartminus}[1]{-\left(#1\right)}
 \newcommand{\negate}[1]{\smartminus{#1}}
 
+\newcommand{\homogenousRotationPrimitive}[2]{\tensexprstyle{\mathtt{TR}}^{#1}(#2)}
+\newcommand{\rotationPrimitive}[2]{\tensexprstyle{\mathtt{R}}^{#1}(#2)}
+
 
 \newkeycommand\TransformationPrimitive[type,axis,base,expressedIn,bool inverse=false,bool components=false][1]{
   \def\vectorcontext{TransformationPrimitive}%
@@ -959,8 +973,8 @@
 	\IfStrEqCase*{\myaxis}{%
 	  {x}{%
 	    \tensorcomponentsformatter{1}{0}{0}%
-				{0}{\ca}{\normalpos{\sa}}%
-				{0}{\normalneg{\sa}}{\ca}%
+				{0}{\ca}{\normalneg{\sa}}%
+				{0}{\normalpos{\sa}}{\ca}%
 	  }%
 	  {y}{%
 	    \tensorcomponentsformatter{\ca}{0}{\normalpos{\sa}}%
@@ -980,13 +994,13 @@
       {R}{%
 	\IfStrEqCase*{\myaxis}{%
 	  {x}{%
-	    \Rx(\normalpos{#1})%
+	    \rotationPrimitive{x}{\normalpos{#1}}
 	  }%
 	  {y}{%
-	    \Ry(\normalpos{#1})%
+	    \rotationPrimitive{y}{\normalpos{#1}}%
 	  }%
 	  {z}{
-	    \Rz(\normalpos{#1}Z)%
+	    \rotationPrimitive{z}{\normalpos{#1}}%
 	  }%
 	}%
       }%
@@ -995,12 +1009,23 @@
 }
 %todo: components. Genmatrix?
 
-\newkeycommand\HomogenousTransformationPrimitive[type,axis,bool components=false][1]{
+
+
+
+\newkeycommand\HomogenousTransformationPrimitive[type,inverse,axis,bool components=false][1]{
   \def\vectorcontext{HomogenousTransformationPrimitive}%
-  \storekeys{type,axis,components}%
+  \storekeys{type,axis,components,inverse}%
   \edefprotect\mycomponents{\storedkey{components}}%
   \edefprotect\myaxis{\storedkey{axis}}%
   \edefprotect\mytype{\storedkey{type}}%
+  \edefprotect\myinverse{\storedkey{inverse}}%
+  \IfSubStr*{\myinverse}{1}{%
+      \let\normalpos\negate%
+      \let\normalneg\identity%
+  }{%
+      \let\normalpos\identity%
+      \let\normalneg\negate%
+  }%
   \IfSubStr*{\mycomponents}{1}{%
     \IfStrEqCase*{\mytype}{%
       {R}{%
@@ -1010,23 +1035,23 @@
 	  {x}{%
 	    \begin{pmatrix}%
 	    1 & 0 & 0 & 0\\%
-	    0 & \ca & -\sa & 0 \\%
-	    0 & \sa & \ca  & 0 \\%
+	    0 & \ca & \normalneg{\sa} & 0 \\%
+	    0 & \normalpos{\sa} & \ca  & 0 \\%
 	    0 & 0 & 0 & 1 \\%
 	    \end{pmatrix}%
 	  }%
 	  {y}{%
 	    \begin{pmatrix}%
-	    \ca & 0 & \sa & 0\\%
+	    \ca & 0 & \normalpos{\sa} & 0\\%
 	    0 & 1 & 0 & 0 \\%
-	    -\sa & 0 & \ca & 0 \\%
+	    \normalneg{\sa} & 0 & \ca & 0 \\%
 	    0 & 0 & 0 & 1 \\%
 	    \end{pmatrix}%
 	  }%
 	  {z}{
 	    \begin{pmatrix}%
-	    \ca & -\sa & 0 &0\\%
-	    \sa & \ca & 0 & 0 \\%
+	    \ca & \normalneg{\sa} & 0 &0\\%
+	    \normalpos{\sa} & \ca & 0 & 0 \\%
 	    0 & 0 & 1 & 0 \\%
 	    0 & 0 & 0 & 1 \\%
 	    \end{pmatrix}%
@@ -1047,13 +1072,13 @@
       {R}{%
 	\IfStrEqCase*{\myaxis}{%
 	  {x}{%
-	    \TRx(#1)%
+	    \homogenousRotationPrimitive{x}{\normalpos{#1}}%
 	  }%
 	  {y}{%
-	    \TRy(#1)%
+	    \homogenousRotationPrimitive{y}{\normalpos{#1}}%
 	  }%
 	  {z}{
-	    \TRz(#1)%
+	    \homogenousRotationPrimitive{z}{\normalpos{#1}}%
 	  }%
 	}%
       }%

@@ -40,6 +40,18 @@ The kinetics package solves all these issues:
 
 As a convenient side effect, the kinetics package forces you to think and structure your thoughts.
 
+
+\section{The basics}
+
+\begin{SideBySideExample}[xrightmargin=1cm,frame=single]
+  \GenericVector \\
+  \GenericVector[expressedIn=0] \\
+  \GenericVector[expressedIn=0,index=z] \\
+  \GenericTensor \\
+  \GenericTensor[expressedIn=0] \\
+  \GenericTensor[expressedIn=0,index=zz] \\
+\end{SideBySideExample}
+
 \section{Kinetics quantities}
 
 The following are the basic quantities that arise in kinetics analysis.
@@ -395,6 +407,28 @@ $\VectorComponents[expressedIn=1]{0,0,0}$ & \verb+\VectorComponents[expressedIn=
  \def\foobarbaz{\Displacement[end=b,start=a,expressedIn=d]}
  \VectorComponents[base=1]{\foobarbaz,bar,0}
 \end{equation}
+
+\section{Rotation matrices}
+
+
+\begin{tabular}{r|l}
+$\TransformationPrimitive[type=R,axis=x]{\alpha}$ & \verb+\TransformationPrimitive[type=R,axis=x]{\alpha}+ \\
+$\TransformationPrimitive[type=R,axis=x,components=true]{\alpha}$ & \verb+\TransformationPrimitive[type=R,axis=x,components=true]{\alpha}+ \\
+$\TransformationPrimitive[type=R,axis=y]{\alpha}$ & \verb+\TransformationPrimitive[type=R,axis=y]{\alpha}+ \\
+$\TransformationPrimitive[type=R,axis=y,components=true]{\alpha}$ & \verb+\TransformationPrimitive[type=R,axis=y,components=true]{\alpha}+ \\
+$\TransformationPrimitive[type=R,axis=z]{\alpha}$ & \verb+\TransformationPrimitive[type=R,axis=z]{\alpha}+ \\
+$\TransformationPrimitive[type=R,axis=z,components=true]{\alpha}$ & \verb+\TransformationPrimitive[type=R,axis=z,components=true]{\alpha}+ \\
+\end{tabular}
+
+\begin{tabular}{r|l}
+$\HomogenousTransformationPrimitive[type=R,axis=x]{\alpha}$ & \verb+\HomogenousTransformationPrimitive[type=R,axis=x]{\alpha}+ \\
+$\HomogenousTransformationPrimitive[type=R,axis=x,components=true]{\alpha}$ & \verb+\HomogenousTransformationPrimitive[type=R,axis=x,components=true]{\alpha}+ \\
+$\HomogenousTransformationPrimitive[type=R,axis=y]{\alpha}$ & \verb+\HomogenousTransformationPrimitive[type=R,axis=y]{\alpha}+ \\
+$\HomogenousTransformationPrimitive[type=R,axis=y,components=true]{\alpha}$ & \verb+\HomogenousTransformationPrimitive[type=R,axis=y,components=true]{\alpha}+ \\
+$\HomogenousTransformationPrimitive[type=R,axis=z]{\alpha}$ & \verb+\HomogenousTransformationPrimitive[type=R,axis=z]{\alpha}+ \\
+$\HomogenousTransformationPrimitive[type=R,axis=z,components=true]{\alpha}$ & \verb+\HomogenousTransformationPrimitive[type=R,axis=z,components=true]{\alpha}+ \\
+\end{tabular}
+
 
 
 \end{document}
