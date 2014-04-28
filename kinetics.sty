@@ -558,10 +558,12 @@
 \newcommand{\VECTORPRETTYDEFAULT}[2]{%
     \storekeys{around,object,wrt,expressedIn,diff,on,end,start,wrt,from,id,index,at,skew}%
     \combiner{\myu}{\checkkey{around},\checkkey{at}}% u and l must be edef'able
+    \edef\expressedInTrans{\checkkey{expressedIn}}
+    \commandkeyblankt{diff}{}{\commandkeyblankt{expressedIn}{}{\commandkeysequal{diff}{expressedIn}{}{\edef\expressedInTrans{\checkkey{diff}}}}}
     \SymbolMarkupVectorModifier[
         ul=\noexpand\combine{\checkkey{object},\checkkey{id},\checkkey{on},\checkkey{end}},
         ll=\noexpand\combine{\checkkey{start},\checkkey{wrt},\checkkey{from}},
-        ur=\checkkey{expressedIn},
+        ur=\expressedInTrans,
         lr=\noexpand\combine{\checkkey{index}},
         u=\myu,
         diff=\storedkey{diff},
